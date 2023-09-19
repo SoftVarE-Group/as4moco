@@ -12,6 +12,15 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+
+}
+
+git {
+    implementation 'https://github.com/RSD6170/feature-model-batch-analysis.git', {
+        name 'FeatureExtraction'
+        branch 'origin/main'
+    }
 }
 
 test {
