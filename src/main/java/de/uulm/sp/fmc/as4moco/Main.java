@@ -5,6 +5,8 @@ import org.collection.fm.handler.AnalysisStepHandler;
 import org.collection.fm.handler.FeatureStep;
 import org.collection.fm.util.AnalysisStepsEnum;
 import org.collection.fm.util.FMUtils;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Engine;
 
 import java.io.File;
 import java.util.Arrays;
@@ -24,5 +26,10 @@ public class Main {
 
         List<FeatureStep> list = analysisStepHandler.getSingleAnalysis(new File("src/main/resources/test.dimacs"));
         list.forEach(System.out::println);
+
+        try (Context context = Context.create();
+        Engine engine = Engine.create()){
+            context.eval("python", "print('test')");
+        }
     }
 }
