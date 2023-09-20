@@ -1,15 +1,11 @@
-import org.apache.tools.ant.taskdefs.condition.Os
 plugins {
     id 'java'
     id 'application'
-    id 'org.graalvm.buildtools.native' version '0.9.27'
-
 }
 
 group = 'de.uulm.sp.fmc.as4moco'
 version = '1.0-SNAPSHOT'
 
-def graalpyVenv = Os.isFamily(Os.FAMILY_WINDOWS) ? "${File.separator}Scripts${File.separator}python.cmd" : "${File.separator}bin${File.separator}python"
 
 repositories {
     mavenCentral()
@@ -18,11 +14,6 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-
-
-    implementation group: 'org.graalvm.polyglot', name: 'python', version: '23.1.0'
-    implementation group: 'org.graalvm.polyglot', name: 'polyglot', version: '23.1.0'
-    implementation group: 'org.graalvm.python', name: 'python-launcher', version: '23.1.0'
 }
 
 git {
@@ -34,91 +25,8 @@ git {
 
 application {
     mainClass = 'de.uulm.sp.fmc.as4moco.Main'
-
 }
 
 test {
     useJUnitPlatform()
 }
-
-jar{
-    exclude("**/vfs/home/lib-graalpython/include/**")
-    exclude("**/vfs/home/lib-graalpython/patches/**")
-    exclude("**/vfs/venv/bin/**")
-    exclude("**/vfs/venv/include/**")
-    exclude("**/vfs/venv/**/site-packages/pip*/**")
-
-
-}
-
-
-
-graalvmNative {
-    binaries {
-        main {
-            // Main options
-            imageName = 'application' // The name of the native image, defaults to the project name
-            mainClass = 'de.uulm.sp.fmc.as4moco.Main' // The main class to use, defaults to the application.mainClass
-            debug = false // Determines if debug info should be generated, defaults to false (alternatively add --debug-native to the CLI)
-            verbose = true // Add verbose output, defaults to false
-            fallback = false // Sets the fallback mode of native-image, defaults to false
-            sharedLibrary = false // Determines if image is a shared library, defaults to false if `java-library` plugin isn't included
-            quickBuild = false // Determines if image is being built in quick build mode (alternatively use GRAALVM_QUICK_BUILD environment variable, or add --native-quick-build to the CLI)
-            richOutput = false // Determines if native-image building should be done with rich output
-            requiredVersion = '22.3' // The minimal GraalVM version, can be `MAJOR`, `MAJOR.MINOR` or `MAJOR.MINOR.PATCH`
-
-            //systemProperties = [] // Sets the system properties to use for the native image builder
-            //configurationFileDirectories.from(file('src/my-config')) // Adds a native image configuration file directory, containing files like reflection configuration
-            //excludeConfig.put("org.example.test:artifact:version", ["^/META-INF/native-image/.*", "^/config/.*"]) // Excludes configuration that matches one of given regexes from JAR of dependency with said coordinates.
-            //excludeConfig.put(file("path/to/artifact.jar"), listOf("^/META-INF/native-image/.*", "^/config/.*"))
-
-            // Advanced options
-            buildArgs.add('-H:-CopyLanguageResources') //Do not automatically copy the necessary language resources to the resources/languages directory next to the produced image.
-            buildArgs.add('-H:ResourceConfigurationFiles=native-image-resources.json') //Native-image-resources.json specifies what resources will be added to the native executable see also https://www.graalvm.org/latest/reference-manual/native-image/dynamic-features/Resources/
-            buildArgs.add('-H:DynamicProxyConfigurationFiles=native-image-proxy-configuration.json') //Proxy classes need to be defined at image build time by specifying the list of interfaces they implement.
-            //jvmArgs.add('flag') // Passes 'flag' directly to the JVM running the native image builder
-
-            // Runtime options
-            //runtimeArgs.add('--help') // Passes '--help' to built image, during "nativeRun" task
-
-            useFatJar = true // Instead of passing each jar individually, builds a fat jar
-        }
-    }
-}
-
-def callPy(String... params ) {
-    def arguments = '\013'
-    for(value in params){
-        arguments += value + '\013'
-    }
-    println arguments
-    javaexec {
-        main = "com.oracle.graal.python.shell.GraalPythonMain"
-        systemProperty("GRAAL_PYTHON_ARGS", arguments)
-        classpath = sourceSets.main.runtimeClasspath
-        standardOutput = System.out
-        errorOutput = System.err
-    }
-}
-
-tasks.register('vfs-index'){
-    dependsOn tasks.fillVenv
-    callPy("-c", "__graalpython__.list_files(r'$projectDir/src/main/resources/vfs', r'$projectDir/classes/vfs/fileslist.txt')")
-}
-
-tasks.register('createVenv'){
-    if (!file("src/main/resources/vfs/venv/pyvenv.cfg").exists()){
-        callPy("-m", "venv", "src${File.separator}main${File.separator}resources${File.separator}vfs${File.separator}venv")
-    }
-}
-
-tasks.register('fillVenv', Exec){
-    dependsOn tasks.createVenv
-    if (!file("src/main/resources/vfs/venv/pyvenv.cfg").exists()){
-        executable("$projectDirsrc${File.separator}main${File.separator}resources${File.separator}vfs${File.separator}venv"+graalpyVenv)
-        args("-m", "pip", "--no-cache-dir", "install", "Autofolio @ git+https://github.com/RSD6170/AutoFolio.git@master")
-    }
-}
-
-
-tasks.named('build') { dependsOn('vfs-index') }
