@@ -1,5 +1,6 @@
 package de.uulm.sp.fmc.as4moco;
 
+import com.oracle.graal.python.shell.GraalPythonMain;
 import org.collection.fm.FeatureStepAnalysis;
 import org.collection.fm.handler.AnalysisStepHandler;
 import org.collection.fm.handler.FeatureStep;
@@ -15,21 +16,17 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
-        FMUtils.installLibraries();
-        AnalysisStepHandler analysisStepHandler = new AnalysisStepHandler();
-        EnumMap<AnalysisStepsEnum, Integer> enumMap = new EnumMap<>(AnalysisStepsEnum.class);
 
-        Arrays.stream(AnalysisStepsEnum.values()).forEach(e -> enumMap.put(e, 60));
+        String code = """
+                from venv import create
+                import os
+                                
+                
+                create("/home/ubuntu/as4moco/as4moco/src/main/resources/vfs/venv", with_pip=True)
+                """;
 
-        analysisStepHandler.initializeHandler(enumMap);
-
-        List<FeatureStep> list = analysisStepHandler.getSingleAnalysis(new File("src/main/resources/test.dimacs"));
-        list.forEach(System.out::println);
-
-        try (Context context = Context.create();
-        Engine engine = Engine.create()){
-            context.eval("python", "print('test')");
+        try (Context context = Context.newBuilder("python").allowAllAccess(true).build()){
+            context.eval("python", code);
         }
     }
 }

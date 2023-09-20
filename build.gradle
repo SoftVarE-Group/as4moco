@@ -9,7 +9,7 @@ plugins {
 group = 'de.uulm.sp.fmc.as4moco'
 version = '1.0-SNAPSHOT'
 
-def graalpyVenv = Os.isFamily(Os.FAMILY_WINDOWS) ? "${File.separator}Scripts${File.separator}python.cmd" : "${File.separator}bin${File.separator}python"
+def graalpyVenv = Os.isFamily(Os.FAMILY_WINDOWS) ? "/Scripts/python.cmd" : "/bin/python"
 
 repositories {
     mavenCentral()
@@ -98,27 +98,30 @@ def callPy(String... params ) {
         classpath = sourceSets.main.runtimeClasspath
         standardOutput = System.out
         errorOutput = System.err
+        jvmArgs("-Dorg.graalvm.launcher.executablename=" + (Os.isFamily(Os.FAMILY_WINDOWS) ? "graalpy.cmd" : "graalpy.sh"))
+        workingDir("$projectDir")
     }
 }
 
 tasks.register('vfs-index'){
-    dependsOn tasks.fillVenv
+    //dependsOn tasks.fillVenv
     callPy("-c", "__graalpython__.list_files(r'$projectDir/src/main/resources/vfs', r'$projectDir/classes/vfs/fileslist.txt')")
 }
 
+/*
 tasks.register('createVenv'){
     if (!file("src/main/resources/vfs/venv/pyvenv.cfg").exists()){
-        callPy("-m", "venv", "src${File.separator}main${File.separator}resources${File.separator}vfs${File.separator}venv")
+        callPy("-m", "venv", "$projectDir/src/main/resources/vfs/venv")
     }
 }
 
 tasks.register('fillVenv', Exec){
     dependsOn tasks.createVenv
     if (!file("src/main/resources/vfs/venv/pyvenv.cfg").exists()){
-        executable("$projectDirsrc${File.separator}main${File.separator}resources${File.separator}vfs${File.separator}venv"+graalpyVenv)
+        executable("$projectDir/src/main/resources/vfs/venv"+graalpyVenv)
         args("-m", "pip", "--no-cache-dir", "install", "Autofolio @ git+https://github.com/RSD6170/AutoFolio.git@master")
     }
 }
-
+*/
 
 tasks.named('build') { dependsOn('vfs-index') }
