@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 group = 'de.uulm.sp.fmc.as4moco'
@@ -29,4 +30,10 @@ application {
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.collection.fm.FeatureStepAnalysis'
+    }
 }
