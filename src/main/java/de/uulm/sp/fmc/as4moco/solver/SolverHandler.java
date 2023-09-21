@@ -50,7 +50,7 @@ public class SolverHandler {
         return solver.parseOutput(val.toString(), ps.exitValue());
     }
 
-    private static void killProcesses(ProcessHandle ps)  {
+    public static void killProcesses(ProcessHandle ps)  {
         ps.descendants().forEach(SolverHandler::killProcesses);
         ps.destroy();
     }
