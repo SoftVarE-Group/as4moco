@@ -1,9 +1,12 @@
 package de.uulm.sp.fmc.as4moco.selection.messages.python;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.uulm.sp.fmc.as4moco.selection.messages.Message;
 import de.uulm.sp.fmc.as4moco.selection.messages.MessageEnum;
+import org.collection.fm.util.AnalysisStepsEnum;
 
 import java.util.List;
+import java.util.Objects;
 
 public class FeatureGroups extends Message {
 
@@ -27,6 +30,11 @@ public class FeatureGroups extends Message {
 
     public List<String> getFgroups() {
         return fgroups;
+    }
+
+    @JsonIgnore
+    public List<AnalysisStepsEnum> getEnums(){
+        return fgroups.stream().map(e -> e.substring(7)).map(e -> e.replace("-", "")).map(AnalysisStepsEnum::getIgnoreCase).filter(Objects::isNull).toList();
     }
 
     public void setFgroups(List<String> fgroups) {
