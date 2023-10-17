@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
 
 public class AlgorithmSelector {
 
-    private final static String[] commands = new String[]{"python3", "autofolio/scripts/java_bridge.py"};
+    private final static String[] commands = new String[]{"~/.virtualenvs/AutoFolio_Fork_3/bin/python3", "autofolio/scripts/java_bridge.py"}; //todo fix
     private final ExecutorService executorService;
     private final ObjectMapper objectMapper;
     private final BufferedReader bufferedReader;

@@ -14,13 +14,11 @@ public class FeatureExtractor {
 
     private final AnalysisStepHandler analysisStepHandler;
 
-    public FeatureExtractor() {
+    public FeatureExtractor(EnumMap<AnalysisStepsEnum, Integer> analysisMap) {
         FMUtils.installLibraries();
 
         analysisStepHandler = new AnalysisStepHandler();
-        EnumMap<AnalysisStepsEnum, Integer> enumMap = new EnumMap<>(AnalysisStepsEnum.class);
-        Arrays.stream(AnalysisStepsEnum.values()).forEach(e -> enumMap.put(e, 60));
-        analysisStepHandler.initializeHandler(enumMap);
+        analysisStepHandler.initializeHandler(analysisMap);
     }
 
     public List<String> extractFeatures(File file){
