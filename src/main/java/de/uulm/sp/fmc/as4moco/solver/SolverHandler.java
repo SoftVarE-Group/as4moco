@@ -2,9 +2,9 @@ package de.uulm.sp.fmc.as4moco.solver;
 
 
 import de.uulm.sp.fmc.as4moco.selection.messages.SolverBudget;
-import de.uulm.sp.fmc.as4moco.solver.solvers.TestSolver;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -12,18 +12,13 @@ import java.util.concurrent.*;
 
 public class SolverHandler {
 
-    private final static String pathToSolver = "workingSolvers/";
-    private final static Map<String, SolverInterface> solvers = Map.ofEntries(
-            Map.entry("test", new TestSolver())//todo add solvers
-    );
-
-    public static List<SolverResponse> runSolvers(SolverBudget[] runList) { //TODO accept list of solvers, handle ending --> give function reference for callback
+    public static List<SolverResponse> runSolvers(SolverBudget[] runList, File cnf) { //TODO accept list of solvers, handle ending --> give function reference for callback
         ArrayList<SolverResponse> solverResponses = new ArrayList<>(runList.length);
         for (SolverBudget solverBudget : runList){
             if (Thread.currentThread().isInterrupted()) break;
-            SolverInterface solver = getSolver(solverBudget.solver());
+            SolverInterface solver = SolverMap.getSolver(solverBudget.solver());
             try {
-                SolverResponse solverResponse = handleSolver(solver, solverBudget.budget());
+                SolverResponse solverResponse = handleSolver(solver, solverBudget.budget(), cnf);
                 solverResponses.add(solverResponse);
                 if (solverResponse.status().equals(SolverStatusEnum.OK)) break;
             } catch (IOException e) {
@@ -33,10 +28,13 @@ public class SolverHandler {
         return solverResponses;
     }
 
-    private static  SolverResponse handleSolver(SolverInterface solver, int timeout) throws IOException {
-        List<String> commands = new ArrayList<>(solver.getParameters());
-        commands.add(0, pathToSolver + solver.getExecutableName());
-        final Process ps = new ProcessBuilder(commands).redirectErrorStream(true).start();
+    private static  SolverResponse handleSolver(SolverInterface solver, int timeout, File cnf) throws IOException {
+        List<String> commands = new ArrayList<>(solver.getParameters(cnf));
+        commands.add(0, solver.getExecutable());
+        ProcessBuilder processBuilder = new ProcessBuilder(commands).redirectErrorStream(true);
+        processBuilder.directory(solver.getFolder());
+        processBuilder.environment().putAll(solver.getEnvironment(timeout));
+        final Process ps = processBuilder.start();
 
         try {
             if (!ps.waitFor(timeout, TimeUnit.SECONDS)) {
@@ -56,11 +54,6 @@ public class SolverHandler {
             }
         }
         return solver.parseOutput(val.toString(), ps.exitValue());
-    }
-
-
-    public static SolverInterface getSolver(String name){
-        return solvers.get(name);
     }
 
     public static void killProcesses(ProcessHandle ps)  {
