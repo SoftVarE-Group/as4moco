@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FeatureExtractor {
 
@@ -21,8 +22,8 @@ public class FeatureExtractor {
         analysisStepHandler.initializeHandler(analysisMap);
     }
 
-    public List<String> extractFeatures(File file){
-        return analysisStepHandler.getSingleAnalysis(file).stream().map(FeatureStep::values).flatMap(List::stream).toList();
+    public String extractFeatures(File file){
+        return analysisStepHandler.getSingleAnalysis(file).stream().map(FeatureStep::values).flatMap(List::stream).collect(Collectors.joining(","));
     }
 
 

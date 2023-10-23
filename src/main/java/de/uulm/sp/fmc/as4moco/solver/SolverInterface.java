@@ -4,8 +4,6 @@ import java.util.List;
 
 public interface SolverInterface {
 
-    String getName();
-
     String getExecutableName();
 
     List<String> getParameters();

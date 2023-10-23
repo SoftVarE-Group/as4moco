@@ -5,18 +5,18 @@ import de.uulm.sp.fmc.as4moco.selection.messages.MessageEnum;
 
 public class GetPrediction extends Message {
 
-    private Double[] featureVector;
+    private String featureVector;
 
-    public GetPrediction( Double[] featureVector) {
+    public GetPrediction( String featureVector) {
         super(MessageEnum.GET_PREDICTION);
         this.featureVector = featureVector;
     }
 
-    public Double[] getFeatureVector() {
+    public String getFeatureVector() {
         return featureVector;
     }
 
-    public void setFeatureVector(Double[] featureVector) {
+    public void setFeatureVector(String featureVector) {
         this.featureVector = featureVector;
     }
 }
