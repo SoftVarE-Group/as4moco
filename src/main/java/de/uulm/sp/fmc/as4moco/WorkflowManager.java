@@ -41,11 +41,12 @@ public class WorkflowManager {
         preschedule = ((PreSchedule) algorithmSelector.askAutofolio(new GetPreSchedule())).getPreSchedule();
     }
 
-    public SolverResponse runSolving(String path){
+    public SolverResponse runSolving(String cnfPath){
+        File cnf = new File(cnfPath);
         try(ExecutorService executorService = Executors.newCachedThreadPool()) {
             CompletionService<List<SolverResponse>> completionService = new ExecutorCompletionService<>(executorService);
-            completionService.submit(() -> SolverHandler.runSolvers(preschedule));
-            completionService.submit(() -> handleSchedule(new File(path)));
+            completionService.submit(() -> SolverHandler.runSolvers(preschedule, cnf));
+            completionService.submit(() -> handleSchedule(cnf));
 
             SolverResponse bestResponse = getBestResponse(completionService.take().get());
             if (bestResponse.status().equals(SolverStatusEnum.OK)) {
@@ -68,7 +69,7 @@ public class WorkflowManager {
     private List<SolverResponse> handleSchedule(File cnfFile){
         String features = featureExtractor.extractFeatures(cnfFile);
         Prediction prediction = (Prediction) algorithmSelector.askAutofolio(new GetPrediction(features));
-        return SolverHandler.runSolvers(prediction.getPrediction());
+        return SolverHandler.runSolvers(prediction.getPrediction(), cnfFile);
     }
 
 
