@@ -19,7 +19,7 @@ public class Main {
 
         WorkflowManager workflowManager = new WorkflowManager(commandLine.getOptionValue("model"));
 
-        workflowManager.runSolving(commandLine.getOptionValue("cnf"));
+        System.out.println(workflowManager.runSolving(commandLine.getOptionValue("cnf")));
 
     }
 
