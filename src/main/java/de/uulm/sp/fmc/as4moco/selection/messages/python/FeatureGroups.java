@@ -38,7 +38,7 @@ public class FeatureGroups extends Message {
 
     @JsonIgnore
     public List<AnalysisStepsEnum> getEnums(){
-        return fgroups.stream().map(e -> e.substring(7)).map(e -> e.replace("-", "")).map(AnalysisStepsEnum::getIgnoreCase).filter(Objects::isNull).toList();
+        return fgroups.stream().map(e -> e.substring(7)).map(e -> e.replace("-", "")).map(AnalysisStepsEnum::getIgnoreCase).filter(Objects::nonNull).toList();
     }
 
     public void setFgroups(List<String> fgroups) {

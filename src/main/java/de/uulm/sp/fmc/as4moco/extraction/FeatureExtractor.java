@@ -6,7 +6,7 @@ import org.collection.fm.util.AnalysisStepsEnum;
 import org.collection.fm.util.FMUtils;
 
 import java.io.File;
-import java.util.Arrays;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ public class FeatureExtractor {
     public FeatureExtractor(EnumMap<AnalysisStepsEnum, Integer> analysisMap) {
         FMUtils.installLibraries();
 
-        analysisStepHandler = new AnalysisStepHandler();
+        analysisStepHandler = new AnalysisStepHandler(Path.of("libs/FeatureExtraction"));
         analysisStepHandler.initializeHandler(analysisMap);
     }
 

@@ -7,12 +7,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 
 public class SolverHandler {
 
-    public static List<SolverResponse> runSolvers(SolverBudget[] runList, File cnf) { //TODO accept list of solvers, handle ending --> give function reference for callback
+    public static List<SolverResponse> runSolvers(SolverBudget[] runList, File cnf) {
         ArrayList<SolverResponse> solverResponses = new ArrayList<>(runList.length);
         for (SolverBudget solverBudget : runList){
             if (Thread.currentThread().isInterrupted()) break;
@@ -30,9 +31,9 @@ public class SolverHandler {
 
     private static  SolverResponse handleSolver(SolverInterface solver, int timeout, File cnf) throws IOException {
         List<String> commands = new ArrayList<>(solver.getParameters(cnf));
-        commands.add(0, solver.getExecutable());
+        commands.add(0, Path.of(solver.getFolder().getAbsolutePath(), solver.getExecutable()).toString());
         ProcessBuilder processBuilder = new ProcessBuilder(commands).redirectErrorStream(true);
-        processBuilder.directory(solver.getFolder());
+        processBuilder.directory(solver.getFolder().getAbsoluteFile());
         processBuilder.environment().putAll(solver.getEnvironment(timeout));
         final Process ps = processBuilder.start();
 

@@ -1,6 +1,8 @@
 package de.uulm.sp.fmc.as4moco.solver;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -46,8 +48,12 @@ public class SolverMap {
                 @Override
                 public List<String> getParameters(File cnf) {
                     List<String> list = new ArrayList<>();
-                    list.add("--outdir /tmp/"+ ThreadLocalRandom.current().nextInt());
                     list.add(cnf.getAbsolutePath());
+                    try {
+                        list.add(Files.createTempDirectory("solverTemp").toFile().getAbsolutePath());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     return list;
                 }
             }),
@@ -65,8 +71,12 @@ public class SolverMap {
                 @Override
                 public List<String> getParameters(File cnf) {
                     List<String> list = new ArrayList<>();
-                    list.add("--outdir /tmp/"+ ThreadLocalRandom.current().nextInt());
                     list.add(cnf.getAbsolutePath());
+                    try {
+                        list.add(Files.createTempDirectory("solverTemp").toFile().getAbsolutePath());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     return list;
                 }
             }),

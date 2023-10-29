@@ -2,56 +2,72 @@ package de.uulm.sp.fmc.as4moco.selection;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.uulm.sp.fmc.as4moco.selection.messages.Message;
 import de.uulm.sp.fmc.as4moco.solver.SolverHandler;
 
 import java.io.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 
 public class AlgorithmSelector {
 
-    private final static String[] commands = new String[]{"~/.virtualenvs/AutoFolio_Fork_3/bin/python3", "autofolio/scripts/java_bridge.py"}; //todo fix
+    private final static String[] commands = new String[]{"/home/ubuntu/as4mocoPy/bin/python3", "-u", "/home/ubuntu/autofolio/autofolio/scripts/java_bridge.py"}; //todo fix
     private final ExecutorService executorService;
+    private final BlockingQueue<Message> blockingQueue = new ArrayBlockingQueue<>(10);
+
     private final ObjectMapper objectMapper;
     private final BufferedReader bufferedReader;
-    private final PrintWriter printWriter;
+    private final BufferedWriter printWriter;
     private final Process pythonProcess;
 
     public AlgorithmSelector() {
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = Executors.newCachedThreadPool();
         objectMapper = new ObjectMapper();
 
         try {
-            pythonProcess = new ProcessBuilder(commands).redirectErrorStream(true).start();
+            ProcessBuilder processBuilder = new ProcessBuilder(commands).redirectErrorStream(true);
+            processBuilder.environment().put("PYTHONUNBUFFERED","TRUE");
+            pythonProcess = processBuilder.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         bufferedReader = pythonProcess.inputReader();
-        printWriter = new PrintWriter(pythonProcess.outputWriter(), true);
+        printWriter = pythonProcess.outputWriter();
+        executorService.submit(this::parseAnswer);
     }
 
     public Future<Message> askAutofolio(Message message){
         return executorService.submit(() -> {
             try {
                 sendQuestion(message);
-                return parseAnswer();
+                return blockingQueue.take();
             } catch (IOException e) {
                 throw new RuntimeException(e); //TODO
             }
         });
     }
 
-    private Message parseAnswer() throws IOException {
-        return objectMapper.readValue(bufferedReader.readLine(), Message.class);
+    private void parseAnswer() {
+        String line;
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                line = bufferedReader.readLine();
+                if (line == null) break;
+                System.out.println(line);
+                blockingQueue.offer(objectMapper.readValue(line, Message.class));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    private void sendQuestion(Message message) throws JsonProcessingException {
-        printWriter.println(objectMapper.writeValueAsString(message));
+    private void sendQuestion(Message message) throws IOException {
+        System.out.println(objectMapper.writeValueAsString(message));
+        printWriter.write(objectMapper.writeValueAsString(message));
+        printWriter.newLine();
+        printWriter.flush();
     }
 
     public void closeAutofolio() throws IOException {

@@ -17,6 +17,7 @@ import de.uulm.sp.fmc.as4moco.solver.SolverStatusEnum;
 import org.collection.fm.util.AnalysisStepsEnum;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -28,17 +29,17 @@ public class WorkflowManager {
 
     private final SolverBudget[] preschedule;
 
-    public WorkflowManager(String modelPath) {
+    public WorkflowManager(String modelPath) throws ExecutionException, InterruptedException {
         algorithmSelector = new AlgorithmSelector();
 
-        if ( ! (algorithmSelector.askAutofolio(new LoadModel(modelPath)) instanceof ModelLoaded)) throw new RuntimeException("Problem with autofolio loading") ;
-        FeatureGroups featureGroups = (FeatureGroups) algorithmSelector.askAutofolio(new GetFeatureGroups());
+        if ( ! (algorithmSelector.askAutofolio(new LoadModel(modelPath)).get() instanceof ModelLoaded)) throw new RuntimeException("Problem with autofolio loading") ;
+        FeatureGroups featureGroups = (FeatureGroups) algorithmSelector.askAutofolio(new GetFeatureGroups()).get();
         EnumMap<AnalysisStepsEnum, Integer> featureMap = new EnumMap<>(AnalysisStepsEnum.class);
         featureGroups.getEnums().forEach(e -> featureMap.put(e, featureGroups.getCutoff()));
 
         featureExtractor = new FeatureExtractor(featureMap);
 
-        preschedule = ((PreSchedule) algorithmSelector.askAutofolio(new GetPreSchedule())).getPreSchedule();
+        preschedule = ((PreSchedule) algorithmSelector.askAutofolio(new GetPreSchedule()).get()).getPreSchedule();
     }
 
     public SolverResponse runSolving(String cnfPath){
@@ -66,11 +67,14 @@ public class WorkflowManager {
         return responses.stream().reduce(new SolverResponse(null, SolverStatusEnum.ERROR, Optional.empty()), (acc, next) -> acc.status().equals(SolverStatusEnum.OK) ? acc : next);
     }
 
-    private List<SolverResponse> handleSchedule(File cnfFile){
+    private List<SolverResponse> handleSchedule(File cnfFile) throws ExecutionException, InterruptedException {
         String features = featureExtractor.extractFeatures(cnfFile);
-        Prediction prediction = (Prediction) algorithmSelector.askAutofolio(new GetPrediction(features));
+        Prediction prediction = (Prediction) algorithmSelector.askAutofolio(new GetPrediction(features)).get();
         return SolverHandler.runSolvers(prediction.getPrediction(), cnfFile);
     }
 
+    public void close() throws IOException {
+        algorithmSelector.closeAutofolio();
+    }
 
 }
