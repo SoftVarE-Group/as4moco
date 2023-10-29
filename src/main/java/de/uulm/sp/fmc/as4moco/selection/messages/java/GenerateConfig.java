@@ -12,7 +12,11 @@ public class GenerateConfig extends Message {
     private Optional<Integer> timeLimit;
     private Optional<Integer> runLimit;
 
-    public GenerateConfig( String scenarioPath, boolean maximize, Optional<Integer> timeLimit, Optional<Integer> runLimit) {
+    public GenerateConfig() {
+        super(MessageEnum.GENERATE_CONFIG);
+    }
+
+    public GenerateConfig(String scenarioPath, boolean maximize, Optional<Integer> timeLimit, Optional<Integer> runLimit) {
         super(MessageEnum.GENERATE_CONFIG);
         this.scenarioPath = scenarioPath;
         this.maximize = maximize;

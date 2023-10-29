@@ -13,6 +13,10 @@ public class GenerateModel extends Message {
     private String config;
     private Optional<String> modelPath;
 
+    public GenerateModel( ) {
+        super(MessageEnum.GENERATE_MODEL);
+    }
+
     public GenerateModel( String scenarioPath, boolean maximize, String config, Optional<String> modelPath) {
         super(MessageEnum.GENERATE_MODEL);
         this.scenarioPath = scenarioPath;

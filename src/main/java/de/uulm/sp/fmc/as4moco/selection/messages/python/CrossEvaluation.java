@@ -10,6 +10,10 @@ public class CrossEvaluation extends Message {
     private String config;
     private Map<String, Double> stats;
 
+    public CrossEvaluation() {
+        super(MessageEnum.CROSS_EVALUATION);
+    }
+
     public CrossEvaluation(String config, Map<String, Double> stats) {
         super(MessageEnum.CROSS_EVALUATION);
         this.config = config;

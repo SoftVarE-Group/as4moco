@@ -4,6 +4,10 @@ public class Error extends Message{
 
     private String reason;
 
+    public Error() {
+        super(MessageEnum.ERROR);
+    }
+
     public Error(String reason) {
         super(MessageEnum.ERROR);
         this.reason = reason;

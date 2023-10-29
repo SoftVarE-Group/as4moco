@@ -7,6 +7,10 @@ public class GenerateCrossEval extends Message {
 
     private String config;
 
+    public GenerateCrossEval() {
+        super(MessageEnum.GENERATE_CROSS_EVALUATION);
+    }
+
     public GenerateCrossEval(String config) {
         super(MessageEnum.GENERATE_CROSS_EVALUATION);
         this.config = config;

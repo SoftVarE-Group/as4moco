@@ -12,6 +12,7 @@ import de.uulm.sp.fmc.as4moco.selection.messages.python.*;
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = LoadModel.class, name ="LOAD_MODEL"),
+        @JsonSubTypes.Type(value = GetFeatureGroups.class, name ="GET_FEATURE_GROUPS"),
         @JsonSubTypes.Type(value = GetPreSchedule.class, name ="GET_PRE_SCHEDULE"),
         @JsonSubTypes.Type(value = GetPrediction.class, name ="GET_PREDICTION"),
         @JsonSubTypes.Type(value = GenerateConfig.class, name ="GENERATE_CONFIG"),
@@ -24,6 +25,7 @@ import de.uulm.sp.fmc.as4moco.selection.messages.python.*;
         @JsonSubTypes.Type(value = Prediction.class, name ="PREDICTION"),
         @JsonSubTypes.Type(value = PreSchedule.class, name ="PRE_SCHEDULE"),
         @JsonSubTypes.Type(value = ModelLoaded.class, name ="MODEL_LOADED"),
+        @JsonSubTypes.Type(value = FeatureGroups.class, name ="FEATURE_GROUPS"),
 })
 
 public abstract class Message {

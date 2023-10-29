@@ -8,6 +8,10 @@ public class Config extends Message {
     private String config;
     private String scenarioPath;
 
+    public Config() {
+        super(MessageEnum.CONFIG);
+    }
+
     public Config(String config, String scenarioPath) {
         super(MessageEnum.CONFIG);
         this.config = config;

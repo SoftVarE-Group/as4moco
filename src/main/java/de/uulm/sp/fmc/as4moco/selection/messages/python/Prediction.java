@@ -9,6 +9,10 @@ public class Prediction extends Message {
     private SolverBudget[] preSchedule;
     private SolverBudget[] prediction;
 
+    public Prediction() {
+        super(MessageEnum.PREDICTION);
+    }
+
     public Prediction( SolverBudget[] preSchedule, SolverBudget[] prediction) {
         super(MessageEnum.PREDICTION);
         this.preSchedule = preSchedule;

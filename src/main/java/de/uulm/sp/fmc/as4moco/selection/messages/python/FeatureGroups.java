@@ -13,6 +13,10 @@ public class FeatureGroups extends Message {
     private int cutoff;
     private List<String> fgroups;
 
+    public FeatureGroups() {
+        super(MessageEnum.FEATURE_GROUPS);
+    }
+
     public FeatureGroups(int cutoff, List<String> fgroups) {
         super(MessageEnum.FEATURE_GROUPS);
 

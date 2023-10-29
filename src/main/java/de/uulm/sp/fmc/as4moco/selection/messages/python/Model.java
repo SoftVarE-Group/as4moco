@@ -8,6 +8,10 @@ public class Model extends Message {
     private String modelPath;
     private String scenarioPath;
 
+    public Model() {
+        super(MessageEnum.MODEL);
+    }
+
     public Model(String modelPath, String scenarioPath) {
         super(MessageEnum.MODEL);
         this.modelPath = modelPath;

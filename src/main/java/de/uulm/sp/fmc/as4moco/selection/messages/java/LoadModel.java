@@ -7,6 +7,10 @@ public class LoadModel extends Message {
 
     private String modelPath;
 
+    public LoadModel() {
+        super(MessageEnum.LOAD_MODEL);
+    }
+
     public LoadModel( String modelPath) {
         super(MessageEnum.LOAD_MODEL);
         this.modelPath = modelPath;

@@ -7,6 +7,10 @@ public class GetPrediction extends Message {
 
     private String featureVector;
 
+    public GetPrediction( ) {
+        super(MessageEnum.GET_PREDICTION);
+    }
+
     public GetPrediction( String featureVector) {
         super(MessageEnum.GET_PREDICTION);
         this.featureVector = featureVector;
