@@ -3,9 +3,9 @@
 echo "c o This script is for Track 1 in model counting competition 2022"
 
 file=$1
-clean_file=$(mktemp XXXXXX.cnf)
-preprocessed_file=$(mktemp XXXXXX.cnf)
-solving_file=$(mktemp XXXXXX.out)
+clean_file=$(mktemp --tmpdir XXXXXX.cnf)
+preprocessed_file=$(mktemp --tmpdir XXXXXX.cnf)
+solving_file=$(mktemp --tmpdir XXXXXX.out)
 
 mc=$(grep "^c t " $file)
 echo "c o found header: $mc"
