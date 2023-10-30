@@ -90,6 +90,17 @@ public class SolverMap {
                 public String getExecutable() {
                     return "starexec_run_track1";
                 }
+            })
+            ,Map.entry("gpmc_r2/track1", new SolverInterface() { //TODO Missing Solver gpmc_r2/track1
+                @Override
+                public File getFolder() {
+                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/gpmc_r2/bin");
+                }
+
+                @Override
+                public String getExecutable() {
+                    return "starexec_run_track1";
+                }
             }),
             Map.entry("Narsimha-track1v-7112ef8eb466e9475/track1_conf1.sh", new SolverInterface() {
                 @Override
@@ -106,6 +117,28 @@ public class SolverMap {
                 @Override
                 public File getFolder() {
                     return new File("workingSolvers/MC2022_Solvers/Track1_MC/Narsimha-track1v-7112ef8eb466e9475/bin");
+                }
+
+                @Override
+                public String getExecutable() {
+                    return "starexec_run_track1_conf2.sh";
+                }
+            }),
+            Map.entry("Narsimha-track1v-51fd045537919d/track1_conf1.sh", new SolverInterface() {
+                @Override
+                public File getFolder() {
+                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/Narsimha-track1v-51fd045537919d");
+                }
+
+                @Override
+                public String getExecutable() {
+                    return "starexec_run_track1_conf1.sh";
+                }
+            }),
+            Map.entry("Narsimha-track1v-51fd045537919d/track1_conf2.sh", new SolverInterface() {
+                @Override
+                public File getFolder() {
+                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/Narsimha-track1v-51fd045537919d");
                 }
 
                 @Override
@@ -145,8 +178,41 @@ public class SolverMap {
                 public String getExecutable() {
                     return "starexec_run_2.sh";
                 }
+            }),
+            Map.entry("mtmc/default", new SolverInterface() {
+                @Override
+                public File getFolder() {
+                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/mtmc");
+                }
+
+                @Override
+                public String getExecutable() {
+                    return "SUMC2";
+                }
+            }),
+            Map.entry("ExactMC/ExactMC_Arjun.sh", new SolverInterface() {
+                @Override
+                public File getFolder() {
+                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/ExactMC/bin");
+                }
+
+                @Override
+                public String getExecutable() {
+                    return "starexec_run_ExactMC_Arjun.sh";
+                }
             })
-            //TODO missing solver: Narsimha-track1v-51fd045537919d 1&2, ExactMC, gpmc_r2, mtmc/default
+            ,
+            Map.entry("ExactMC/ExactMC_BE.sh", new SolverInterface() {
+                @Override
+                public File getFolder() {
+                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/ExactMC/bin");
+                }
+
+                @Override
+                public String getExecutable() {
+                    return "starexec_run_ExactMC_BE.sh";
+                }
+            })
     );
 
     public static SolverInterface getSolver(String name){
