@@ -7,7 +7,7 @@ public record SolverResponse(SolverInterface solver, SolverStatusEnum status, Op
     @Override
     public String toString() {
         return "SolverResponse{" +
-                "solver=" + solver +
+                "solver=" + solver.getExecutable() +
                 ", status=" + status +
                 ", solution=" + solution +
                 '}';
