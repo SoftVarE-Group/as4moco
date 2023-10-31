@@ -33,13 +33,16 @@ public class WorkflowManager {
         algorithmSelector = new AlgorithmSelector();
 
         if ( ! (algorithmSelector.askAutofolio(new LoadModel(modelPath)).get() instanceof ModelLoaded)) throw new RuntimeException("Problem with autofolio loading") ;
+        System.out.println("Autofolio loaded successfully!");
+
         FeatureGroups featureGroups = (FeatureGroups) algorithmSelector.askAutofolio(new GetFeatureGroups()).get();
         EnumMap<AnalysisStepsEnum, Integer> featureMap = new EnumMap<>(AnalysisStepsEnum.class);
         featureGroups.getEnums().forEach(e -> featureMap.put(e, featureGroups.getCutoff()));
-
         featureExtractor = new FeatureExtractor(featureMap);
+        System.out.println("Initialized Feature Extraction");
 
         preschedule = ((PreSchedule) algorithmSelector.askAutofolio(new GetPreSchedule()).get()).getPreSchedule();
+        System.out.println("Read Pre-Schedule");
     }
 
     public SolverResponse runSolving(String cnfPath){
@@ -50,10 +53,14 @@ public class WorkflowManager {
             completionService.submit(() -> handleSchedule(cnf));
 
             SolverResponse bestResponse = getBestResponse(completionService.take().get());
+            System.out.println("First Pipeline finished!");
             if (bestResponse.status().equals(SolverStatusEnum.OK)) {
                 executorService.shutdownNow();
+                System.out.println("Status ok, kill other pipeline");
             } else {
+                System.out.println("Status not ok, wait for other pipeline");
                 List<SolverResponse> responses = completionService.take().get();
+                System.out.println("Second pipeline finished!");
                 bestResponse = getBestResponse(responses);
             }
             return bestResponse;
@@ -69,11 +76,14 @@ public class WorkflowManager {
 
     private List<SolverResponse> handleSchedule(File cnfFile) throws ExecutionException, InterruptedException {
         String features = featureExtractor.extractFeatures(cnfFile);
+        System.out.printf("Extracted feature Vector: %s%n", features);
         Prediction prediction = (Prediction) algorithmSelector.askAutofolio(new GetPrediction(features)).get();
+        System.out.println("Got Prediction: "+prediction);
         return SolverHandler.runSolvers(prediction.getPrediction(), cnfFile);
     }
 
     public void close() throws IOException {
+        System.out.println("Closing Autofolio!");
         algorithmSelector.closeAutofolio();
     }
 

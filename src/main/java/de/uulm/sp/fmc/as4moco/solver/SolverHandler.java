@@ -18,11 +18,14 @@ public class SolverHandler {
         for (SolverBudget solverBudget : runList){
             if (Thread.currentThread().isInterrupted()) break;
             SolverInterface solver = SolverMap.getSolver(solverBudget.solver());
+            System.out.printf("Run solver %s%n", solverBudget.solver());
             try {
                 SolverResponse solverResponse = handleSolver(solver, solverBudget.budget(), cnf);
+                System.out.println("Solver finished: "+solverResponse);
                 solverResponses.add(solverResponse);
                 if (solverResponse.status().equals(SolverStatusEnum.OK)) break;
             } catch (IOException e) {
+                System.out.println("Solver Error!");
                 solverResponses.add(new SolverResponse(solver, SolverStatusEnum.ERROR, Optional.empty()));
             }
         }
