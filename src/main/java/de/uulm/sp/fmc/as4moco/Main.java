@@ -25,11 +25,11 @@ public class Main {
 
         WorkflowManager workflowManager = new WorkflowManager(commandLine.getOptionValue("modelFile"));
 
-        System.out.println(workflowManager.runSolving(commandLine.getOptionValue("cnfFile")));
+        System.out.println("as4moco solution: "+workflowManager.runSolving(commandLine.getOptionValue("cnfFile")));
         Instant after = Instant.now();
         workflowManager.close();
 
-        System.out.println("Duration: " + Duration.between(before, after));
+        System.out.println("Duration: " + Duration.between(before, after).toMillis()/1000f + "s");
         System.exit(0);
 
     }

@@ -77,7 +77,9 @@ public class WorkflowManager {
     private List<SolverResponse> handleSchedule(File cnfFile) throws ExecutionException, InterruptedException {
         String features = featureExtractor.extractFeatures(cnfFile);
         System.out.printf("Extracted feature Vector: %s%n", features);
+        if (Thread.currentThread().isInterrupted()) return new ArrayList<>();
         Prediction prediction = (Prediction) algorithmSelector.askAutofolio(new GetPrediction(features)).get();
+        if (Thread.currentThread().isInterrupted()) return new ArrayList<>();
         System.out.println("Got Prediction: "+prediction);
         return SolverHandler.runSolvers(prediction.getPrediction(), cnfFile);
     }

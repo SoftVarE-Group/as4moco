@@ -55,7 +55,6 @@ public class AlgorithmSelector {
             try {
                 line = bufferedReader.readLine();
                 if (line == null) break;
-                System.out.println(line);
                 blockingQueue.offer(objectMapper.readValue(line, Message.class));
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -64,7 +63,6 @@ public class AlgorithmSelector {
     }
 
     private void sendQuestion(Message message) throws IOException {
-        System.out.println(objectMapper.writeValueAsString(message));
         printWriter.write(objectMapper.writeValueAsString(message));
         printWriter.newLine();
         printWriter.flush();
@@ -72,7 +70,6 @@ public class AlgorithmSelector {
 
     public void closeAutofolio() throws IOException {
         executorService.shutdownNow();
-        executorService.close();
         SolverHandler.killProcesses(pythonProcess.toHandle());
         bufferedReader.close();
         printWriter.close();

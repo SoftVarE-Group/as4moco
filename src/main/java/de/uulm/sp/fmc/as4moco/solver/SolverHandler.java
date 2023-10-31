@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 
 public class SolverHandler {
 
-    public static List<SolverResponse> runSolvers(SolverBudget[] runList, File cnf) {
+    public static List<SolverResponse> runSolvers(SolverBudget[] runList, File cnf) throws InterruptedException {
         ArrayList<SolverResponse> solverResponses = new ArrayList<>(runList.length);
         for (SolverBudget solverBudget : runList){
             if (Thread.currentThread().isInterrupted()) break;
@@ -27,12 +27,15 @@ public class SolverHandler {
             } catch (IOException e) {
                 System.out.println("Solver Error!");
                 solverResponses.add(new SolverResponse(solver, SolverStatusEnum.ERROR, Optional.empty()));
+            } catch (InterruptedException e) {
+                System.out.println("Solver interrupted!");
+                solverResponses.add(new SolverResponse(solver, SolverStatusEnum.ERROR, Optional.empty()));
             }
         }
         return solverResponses;
     }
 
-    private static  SolverResponse handleSolver(SolverInterface solver, int timeout, File cnf) throws IOException {
+    private static  SolverResponse handleSolver(SolverInterface solver, int timeout, File cnf) throws IOException, InterruptedException {
         List<String> commands = new ArrayList<>(solver.getParameters(cnf));
         commands.add(0, Path.of(solver.getFolder().getAbsolutePath(), solver.getExecutable()).toString());
         ProcessBuilder processBuilder = new ProcessBuilder(commands).redirectErrorStream(true);
@@ -47,7 +50,7 @@ public class SolverHandler {
             }
         } catch (InterruptedException e ){
             killProcesses(ps.toHandle());
-            return new SolverResponse(solver, SolverStatusEnum.ERROR, Optional.empty());
+            throw new InterruptedException();
         }
 
         StringBuilder val = new StringBuilder();
