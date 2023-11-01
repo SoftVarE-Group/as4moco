@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.uulm.sp.fmc.as4moco.selection.messages.SolverBudget;
 import de.uulm.sp.fmc.as4moco.solver.SolverHandler;
 import de.uulm.sp.fmc.as4moco.solver.SolverResponse;
@@ -91,7 +93,10 @@ public class Main {
 
         try (WorkflowManager workflowManager = new WorkflowManager(modelFile);
              JsonGenerator out = factory.createGenerator(saveFile, JsonEncoding.UTF8)) {
-            out.setCodec(new ObjectMapper());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
+            out.setCodec(mapper);
+            out.useDefaultPrettyPrinter();
             out.writeStartArray();
             for (File cnf : cnfs) {
                 System.out.println("Run file "+cnf);
@@ -108,6 +113,7 @@ public class Main {
 
                 SolvingRun solvingRun = new SolvingRun(cnf, before, after, Duration.between(before, after).toMillis() / 1000d, solverResponse);
                 out.writeObject(solvingRun);
+
                 solvingRuns.add(solvingRun);
             }
             out.writeEndArray();
@@ -155,7 +161,10 @@ public class Main {
 
 
         try (JsonGenerator out = factory.createGenerator(saveFile, JsonEncoding.UTF8)) {
-            out.setCodec(new ObjectMapper());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
+            out.setCodec(mapper);
+            out.useDefaultPrettyPrinter();
             out.writeStartArray();
             for (RunTask task : tasks) {
                 System.out.println("Run task "+task);
