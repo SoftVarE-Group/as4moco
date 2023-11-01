@@ -3,6 +3,7 @@ package de.uulm.sp.fmc.as4moco;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.uulm.sp.fmc.as4moco.selection.messages.SolverBudget;
 import de.uulm.sp.fmc.as4moco.solver.SolverHandler;
 import de.uulm.sp.fmc.as4moco.solver.SolverResponse;
@@ -24,7 +25,15 @@ public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
         CommandLine commandLine = parseCommandLine(args, generateOptions());
 
-        runNormal(commandLine);
+        //runNormal(commandLine);
+        runSBSOracleAnalysis(
+                new File("/home/ubuntu/autofolio/autofolio/examples/MCC2022_T1_randomSplits/split.csv"),
+                new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete"),
+                new File("sbsRuns.json"),
+                new File("oracleRuns.json"),
+                3600
+        );
+
         System.exit(0);
 
     }
@@ -82,6 +91,7 @@ public class Main {
 
         try (WorkflowManager workflowManager = new WorkflowManager(modelFile);
              JsonGenerator out = factory.createGenerator(saveFile, JsonEncoding.UTF8)) {
+            out.setCodec(new ObjectMapper());
             out.writeStartArray();
             for (File cnf : cnfs) {
                 System.out.println("Run file "+cnf);
@@ -145,6 +155,7 @@ public class Main {
 
 
         try (JsonGenerator out = factory.createGenerator(saveFile, JsonEncoding.UTF8)) {
+            out.setCodec(new ObjectMapper());
             out.writeStartArray();
             for (RunTask task : tasks) {
                 System.out.println("Run task "+task);
