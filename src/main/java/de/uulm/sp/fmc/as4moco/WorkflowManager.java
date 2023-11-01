@@ -22,17 +22,17 @@ import java.util.*;
 import java.util.concurrent.*;
 
 
-public class WorkflowManager {
+public class WorkflowManager implements AutoCloseable {
 
     private final FeatureExtractor featureExtractor;
     private final AlgorithmSelector algorithmSelector;
 
     private final SolverBudget[] preschedule;
 
-    public WorkflowManager(String modelPath) throws ExecutionException, InterruptedException {
+    public WorkflowManager(File modelFile) throws ExecutionException, InterruptedException {
         algorithmSelector = new AlgorithmSelector();
 
-        if ( ! (algorithmSelector.askAutofolio(new LoadModel(modelPath)).get() instanceof ModelLoaded)) throw new RuntimeException("Problem with autofolio loading") ;
+        if ( ! (algorithmSelector.askAutofolio(new LoadModel(modelFile.getAbsolutePath())).get() instanceof ModelLoaded)) throw new RuntimeException("Problem with autofolio loading") ;
         System.out.println("Autofolio loaded successfully!");
 
         FeatureGroups featureGroups = (FeatureGroups) algorithmSelector.askAutofolio(new GetFeatureGroups()).get();
@@ -45,8 +45,7 @@ public class WorkflowManager {
         System.out.println("Read Pre-Schedule");
     }
 
-    public SolverResponse runSolving(String cnfPath){
-        File cnf = new File(cnfPath);
+    public SolverResponse runSolving(File cnf){
         try(ExecutorService executorService = Executors.newCachedThreadPool()) {
             CompletionService<List<SolverResponse>> completionService = new ExecutorCompletionService<>(executorService);
             completionService.submit(() -> SolverHandler.runSolvers(preschedule, cnf));
@@ -84,6 +83,7 @@ public class WorkflowManager {
         return SolverHandler.runSolvers(prediction.getPrediction(), cnfFile);
     }
 
+    @Override
     public void close() throws IOException {
         System.out.println("Closing Autofolio!");
         algorithmSelector.closeAutofolio();
