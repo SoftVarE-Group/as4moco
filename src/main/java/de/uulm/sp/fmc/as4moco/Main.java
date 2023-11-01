@@ -110,17 +110,18 @@ public class Main {
     /**
      * Runs analysis of SBS and Oracles from CSV file
      * @param csvFile csv file with data
+     * @param cnfFolder folder with cnfs
      * @param sbsOut file to save sbs runs to
      * @param oracleOut file to save oracle runs to
      * @param timeout timeout for solver
      * @throws IOException
      */
-    private static void runSBSOracleAnalysis(File csvFile, File sbsOut, File oracleOut, int timeout) throws IOException {
+    private static void runSBSOracleAnalysis(File csvFile, File cnfFolder,File sbsOut, File oracleOut, int timeout) throws IOException {
         try (CSVParser parser = CSVParser.parse(csvFile, Charset.defaultCharset(), CSVFormat.Builder.create(CSVFormat.DEFAULT).setHeader().setAllowMissingColumnNames(true).setSkipHeaderRecord(true).build())) {
             List<RunTask> sbsList = new ArrayList<>();
             List<RunTask> oracleList = new ArrayList<>();
             parser.stream().forEach(e -> {
-                File instance = new File(e.get("InstanceNo"));
+                File instance = new File( cnfFolder.getAbsolutePath()+ File.separator + "mc2022_track1_%03d.dimacs".formatted(Integer.parseInt(e.get("InstanceNo"))));
                 sbsList.add(new RunTask(e.get("SBS"), instance, timeout));
                 oracleList.add(new RunTask(e.get("Oracle"), instance, timeout));
             });
