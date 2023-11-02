@@ -182,12 +182,12 @@ public class SolverMap {
             Map.entry("mtmc/default", new SolverInterface() {
                 @Override
                 public File getFolder() {
-                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/mtmc");
+                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/mtmc/bin");
                 }
 
                 @Override
                 public String getExecutable() {
-                    return "SUMC2";
+                    return "starexec_run_default";
                 }
             }),
             Map.entry("ExactMC/ExactMC_Arjun.sh", new SolverInterface() {

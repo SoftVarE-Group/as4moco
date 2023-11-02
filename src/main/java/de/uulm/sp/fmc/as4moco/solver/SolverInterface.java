@@ -14,7 +14,9 @@ public interface SolverInterface {
     }
 
     default SolverResponse parseOutput(String combinedOutput, int statusCode) {
-        if (statusCode == 0){
+        if (statusCode == 0 || statusCode == 42){
+            if (combinedOutput.contains("TIME LIMIT OF") && combinedOutput.contains("EXCEEDED"))
+                return new SolverResponse(this, SolverStatusEnum.TIMEOUT, Optional.empty());
             Optional<Double> count = combinedOutput.lines().filter(e -> e.startsWith("c s exact"))
                     .map(SolverInterface::mapMultiStringToDouble)
                     .filter(Optional::isPresent).map(Optional::get).findAny(); //TODO
@@ -28,7 +30,7 @@ public interface SolverInterface {
                 Map.entry("STAREXEC_WALLCLOCK_LIMIT", String.valueOf(timeout)),
                 Map.entry("STAREXEC_CPU_LIMIT", String.valueOf(timeout)),
                 Map.entry("STAREXEC_MAX_MEM", String.valueOf(4000)),
-                Map.entry("STAREXEC_MAX_WRITE", String.valueOf(20))
+                Map.entry("STAREXEC_MAX_WRITE", String.valueOf(8000))
         );
     }
 
