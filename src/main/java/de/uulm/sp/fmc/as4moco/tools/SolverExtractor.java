@@ -6,14 +6,14 @@ import java.util.stream.Collectors;
 
 public class SolverExtractor {
 
-    private static final File algoRuns = new File("/tmp/pycharm_project_349/examples/MCC2022_Track1_complete/algorithm_runs.arff");
-    private static final File splitFile = new File("/tmp/pycharm_project_349/examples/MCC2022_T1_randomSplits/splits.txt");
+    private static final File algoRuns = new File("/home/ubuntu/autofolio/autofolio/examples/MCC2022_Track1_complete/algorithm_runs.arff");
+    private static final File splitFile = new File("/home/ubuntu/autofolio/autofolio/examples/MCC2022_T1_randomSplits/splits.txt");
 
 
     public static void main(String[] args) throws IOException {
         getOracleList(algoRuns).forEach(System.out::println);
         System.out.println("----------------------------------------------");
-        getSBSwithSplits(algoRuns, splitFile).forEach(System.out::println);
+        getSBSwithoutSplits(algoRuns, splitFile).forEach(System.out::println);
 
 
     }
@@ -33,7 +33,7 @@ public class SolverExtractor {
 
     }
 
-    private static List<String> getSBSwithSplits(File input, File splits) throws IOException {
+    private static List<String> getSBSwithoutSplits(File input, File splits) throws IOException {
         try (BufferedReader in = new BufferedReader(new FileReader(input));
              BufferedReader splitIn = new BufferedReader(new FileReader(splits))) {
 
@@ -62,7 +62,7 @@ public class SolverExtractor {
                 int i = entry.getKey();
                 List<Integer> splitEntries = entry.getValue();
 
-                Map<String, Double> solverQualityMap = solvers.stream().filter(e -> splitEntries.contains(e.instance)).collect(Collectors.toMap(SolverTuple::solver, SolverTuple::runtime, Double::sum));
+                Map<String, Double> solverQualityMap = solvers.stream().filter(e -> !splitEntries.contains(e.instance)).collect(Collectors.toMap(SolverTuple::solver, SolverTuple::runtime, Double::sum));
                 return solverQualityMap.entrySet().stream().min(Comparator.comparingDouble(Map.Entry::getValue)).orElseThrow().getKey();
             }).toList();
         }
