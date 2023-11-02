@@ -21,7 +21,7 @@ import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
@@ -132,7 +132,7 @@ public class Main {
      * @param timeout timeout for solver
      * @throws IOException
      */
-    private static void runSBSOracleAnalysis(File csvFile, File cnfFolder,File sbsOut, File oracleOut, int timeout) throws IOException {
+    private static void runSBSOracleAnalysis(File csvFile, File cnfFolder,File sbsOut, File oracleOut, int timeout) throws IOException, InterruptedException, ExecutionException {
         try (CSVParser parser = CSVParser.parse(csvFile, Charset.defaultCharset(), CSVFormat.Builder.create(CSVFormat.DEFAULT).setHeader().setAllowMissingColumnNames(true).setSkipHeaderRecord(true).build())) {
             List<RunTask> sbsList = new ArrayList<>();
             List<RunTask> oracleList = new ArrayList<>();
@@ -154,19 +154,22 @@ public class Main {
      * @return list of runs
      * @throws IOException
      */
-    private static List<SolvingRun> testSolver(List<RunTask> tasks, File saveFile) throws IOException{
+    private static List<SolvingRun> testSolver(List<RunTask> tasks, File saveFile) throws IOException, InterruptedException, ExecutionException {
         List<SolvingRun> solvingRuns = new ArrayList<>(tasks.size());
 
         JsonFactory factory = new JsonFactory();
 
 
-        try (JsonGenerator out = factory.createGenerator(saveFile, JsonEncoding.UTF8)) {
+        try (JsonGenerator out = factory.createGenerator(saveFile, JsonEncoding.UTF8);
+             ExecutorService executorService = Executors.newFixedThreadPool(3)) {
+            CompletionService<SolvingRun> completionService = new ExecutorCompletionService<>(executorService);
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
             out.setCodec(mapper);
             out.useDefaultPrettyPrinter();
             out.writeStartArray();
-            for (RunTask task : tasks) {
+
+            tasks.forEach(task -> completionService.submit(() -> {
                 System.out.println("Run task "+task);
                 Instant before = Instant.now();
                 SolverResponse solverResponse;
@@ -181,7 +184,11 @@ public class Main {
 
                 SolvingRun solvingRun = new SolvingRun(task.cnf(), before, after, Duration.between(before, after).toMillis() / 1000d, solverResponse);
                 out.writeObject(solvingRun);
-                solvingRuns.add(solvingRun);
+                return solvingRun;
+            }));
+
+            for (int i = 0; i < tasks.size(); i++) {
+                solvingRuns.add(completionService.take().get());
             }
             out.writeEndArray();
         }
