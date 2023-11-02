@@ -27,8 +27,8 @@ public interface SolverInterface {
         return Map.ofEntries(
                 Map.entry("STAREXEC_WALLCLOCK_LIMIT", String.valueOf(timeout)),
                 Map.entry("STAREXEC_CPU_LIMIT", String.valueOf(timeout)),
-                Map.entry("STAREXEC_MAX_MEM", String.valueOf(10)),
-                Map.entry("STAREXEC_MAX_WRITE", String.valueOf(5))
+                Map.entry("STAREXEC_MAX_MEM", String.valueOf(4000)),
+                Map.entry("STAREXEC_MAX_WRITE", String.valueOf(20))
         );
     }
 
