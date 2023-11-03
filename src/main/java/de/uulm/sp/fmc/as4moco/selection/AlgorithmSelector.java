@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 
 public class AlgorithmSelector {
 
-    private final static String[] commands = new String[]{"/home/ubuntu/as4mocoPy/bin/python3", "-u", "/home/ubuntu/autofolio/autofolio/scripts/java_bridge.py"}; //todo fix
+    private final static String[] commands = new String[]{"/home/ubuntu//as4moco/as4mocoPy/bin/python3", "-u", "/home/ubuntu/as4moco/AutoFolio/scripts/java_bridge.py"}; //todo fix
     private final ExecutorService executorService;
     private final BlockingQueue<Message> blockingQueue = new ArrayBlockingQueue<>(10);
 
