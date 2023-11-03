@@ -1,32 +1,37 @@
 package de.uulm.sp.fmc.as4moco.tools;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.nio.charset.Charset;
+import java.util.*;
 
 public class FoldGenerator {
 
-    private final static String scenarioOutFolder = "/tmp/pycharm_project_349/examples/MCC2022_T1_randomSplits/Training_5";
+    private final static String scenarioOutFolder = "/tmp/pycharm_project_349/examples/MCC2022_T1_randomSplits/Training_";
     private final static String scenarioInFolder = "/tmp/pycharm_project_349/examples/MCC2022_Track1_complete";
+    private final static String csvFile = "/tmp/pycharm_project_349/examples/MCC2022_T1_randomSplits/split.csv";
+
     private final static String algoRuns = "algorithm_runs.arff";
     private final static String featureCosts = "feature_costs.arff";
     private final static String featureStatus = "feature_runstatus.arff";
     private final static String featureValues = "feature_values.arff";
 
     public static void main(String[] args) throws IOException {
-        try (BufferedReader sysInReader = new BufferedReader(new InputStreamReader(System.in))) {
+        try (CSVParser parser = CSVParser.parse(new File(csvFile), Charset.defaultCharset(), CSVFormat.Builder.create(CSVFormat.DEFAULT).setHeader().setAllowMissingColumnNames(true).setSkipHeaderRecord(true).build())) {
 
-            List<Integer> cnfsToRemove = new ArrayList<>(40);
-            String line;
-            while (!Objects.equals(line = sysInReader.readLine(), "")){
-                cnfsToRemove.add(Integer.parseInt(line));
-            }
+            Map<Integer, List<Integer>> splitMap = new HashMap<>();
+            parser.stream().forEach(e -> splitMap.computeIfAbsent(Integer.valueOf(e.get("Split")), k -> new ArrayList<>()).add(Integer.valueOf(e.get("InstanceNo"))));
 
-            handleFile(new File(scenarioInFolder + File.separator + algoRuns), new File(scenarioOutFolder + File.separator + algoRuns), cnfsToRemove);
-            handleFile(new File(scenarioInFolder + File.separator + featureCosts), new File(scenarioOutFolder + File.separator + featureCosts), cnfsToRemove);
-            handleFile(new File(scenarioInFolder + File.separator + featureStatus), new File(scenarioOutFolder + File.separator + featureStatus), cnfsToRemove);
-            handleFile(new File(scenarioInFolder + File.separator + featureValues), new File(scenarioOutFolder + File.separator + featureValues), cnfsToRemove);
+            splitMap.forEach( (split, cnfsToRemove) -> {
+                handleFile(new File(scenarioInFolder + File.separator + algoRuns), new File(scenarioOutFolder + split + File.separator + algoRuns), cnfsToRemove);
+                handleFile(new File(scenarioInFolder + File.separator + featureCosts), new File(scenarioOutFolder  + split+ File.separator + featureCosts), cnfsToRemove);
+                handleFile(new File(scenarioInFolder + File.separator + featureStatus), new File(scenarioOutFolder  + split+ File.separator + featureStatus), cnfsToRemove);
+                handleFile(new File(scenarioInFolder + File.separator + featureValues), new File(scenarioOutFolder  + split+ File.separator + featureValues), cnfsToRemove);
+            });
+
+
         }
 
 
@@ -36,7 +41,7 @@ public class FoldGenerator {
         try(BufferedReader in = new BufferedReader(new FileReader(input));
             PrintWriter out = new PrintWriter(new FileWriter(output, false))) {
             System.out.println("starting with "+input);
-            in.lines().filter(line -> !containsAny(line, toRemove)).forEach(out::println);
+            in.lines().filter(line -> !containsAny(line, toRemove)).filter(line -> !line.contains("mtmc/default")).forEach(out::println);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
