@@ -29,11 +29,13 @@ public class Main {
 
         //runNormal(commandLine);
         runSBSOracleAnalysis(
-                new File("/home/ubuntu/autofolio/autofolio/examples/MCC2022_T1_randomSplits/split.csv"),
-                new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete"),
-                new File("sbsRuns.json"),
-                new File("oracleRuns.json"),
-                3600
+                new File("/home/ubuntu//as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
+                1,
+                new File("/home/ubuntu/MCC2022_T1_cnfs"),
+                new File("sbsRuns_1.json"),
+                new File("oracleRuns_1.json"),
+                3600,
+                1
         );
 
         System.exit(0);
@@ -126,23 +128,24 @@ public class Main {
     /**
      * Runs analysis of SBS and Oracles from CSV file
      * @param csvFile csv file with data
+     * @param split split to evaluate
      * @param cnfFolder folder with cnfs
      * @param sbsOut file to save sbs runs to
      * @param oracleOut file to save oracle runs to
      * @param timeout timeout for solver
      * @throws IOException
      */
-    private static void runSBSOracleAnalysis(File csvFile, File cnfFolder,File sbsOut, File oracleOut, int timeout) throws IOException, InterruptedException, ExecutionException {
+    private static void runSBSOracleAnalysis(File csvFile, int split, File cnfFolder,File sbsOut, File oracleOut, int timeout, int nThreads) throws IOException, InterruptedException, ExecutionException {
         try (CSVParser parser = CSVParser.parse(csvFile, Charset.defaultCharset(), CSVFormat.Builder.create(CSVFormat.DEFAULT).setHeader().setAllowMissingColumnNames(true).setSkipHeaderRecord(true).build())) {
             List<RunTask> sbsList = new ArrayList<>();
             List<RunTask> oracleList = new ArrayList<>();
-            parser.stream().forEach(e -> {
+            parser.stream().filter(e -> Integer.parseInt(e.get("Split")) == split).forEach(e -> {
                 File instance = new File( cnfFolder.getAbsolutePath()+ File.separator + "mc2022_track1_%03d.dimacs".formatted(Integer.parseInt(e.get("InstanceNo"))));
                 sbsList.add(new RunTask(e.get("SBS"), instance, timeout));
                 oracleList.add(new RunTask(e.get("Oracle"), instance, timeout));
             });
-            testSolver(sbsList, sbsOut);
-            testSolver(oracleList, oracleOut);
+            testSolver(sbsList, sbsOut, nThreads);
+            testSolver(oracleList, oracleOut, nThreads);
         }
     }
 
@@ -154,14 +157,14 @@ public class Main {
      * @return list of runs
      * @throws IOException
      */
-    private static List<SolvingRun> testSolver(List<RunTask> tasks, File saveFile) throws IOException, InterruptedException, ExecutionException {
+    private static List<SolvingRun> testSolver(List<RunTask> tasks, File saveFile, int nThreads) throws IOException, InterruptedException, ExecutionException {
         List<SolvingRun> solvingRuns = new ArrayList<>(tasks.size());
 
         JsonFactory factory = new JsonFactory();
 
 
         try (JsonGenerator out = factory.createGenerator(saveFile, JsonEncoding.UTF8);
-             ExecutorService executorService = Executors.newFixedThreadPool(3)) {
+             ExecutorService executorService = Executors.newFixedThreadPool(nThreads)) {
             CompletionService<SolvingRun> completionService = new ExecutorCompletionService<>(executorService);
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
