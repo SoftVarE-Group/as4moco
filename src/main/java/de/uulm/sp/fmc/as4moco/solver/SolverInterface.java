@@ -20,6 +20,9 @@ public interface SolverInterface {
             Optional<Double> count = combinedOutput.lines().filter(e -> e.startsWith("c s exact"))
                     .map(SolverInterface::mapMultiStringToDouble)
                     .filter(Optional::isPresent).map(Optional::get).findAny(); //TODO
+            if (count.isEmpty()) count = combinedOutput.lines().filter(e -> e.startsWith("c s approx"))
+                    .map(SolverInterface::mapMultiStringToDouble)
+                    .filter(Optional::isPresent).map(Optional::get).findAny();
             if (count.isPresent()) return new SolverResponse(this, SolverStatusEnum.OK, count);
         }
         return new SolverResponse(this, SolverStatusEnum.ERROR, Optional.empty());
@@ -29,7 +32,7 @@ public interface SolverInterface {
         return Map.ofEntries(
                 Map.entry("STAREXEC_WALLCLOCK_LIMIT", String.valueOf(timeout)),
                 Map.entry("STAREXEC_CPU_LIMIT", String.valueOf(timeout)),
-                Map.entry("STAREXEC_MAX_MEM", String.valueOf(4000)),
+                Map.entry("STAREXEC_MAX_MEM", String.valueOf(7000)),
                 Map.entry("STAREXEC_MAX_WRITE", String.valueOf(8000))
         );
     }
