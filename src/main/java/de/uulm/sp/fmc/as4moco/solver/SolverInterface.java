@@ -25,6 +25,7 @@ public interface SolverInterface {
                     .filter(Optional::isPresent).map(Optional::get).findAny();
             if (count.isPresent()) return new SolverResponse(this, SolverStatusEnum.OK, count);
         }
+        System.err.println(combinedOutput);
         return new SolverResponse(this, SolverStatusEnum.ERROR, Optional.empty());
     }
 
