@@ -27,19 +27,65 @@ public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
         CommandLine commandLine = parseCommandLine(args, generateOptions());
 
-        //runNormal(commandLine);
-        runSBSOracleAnalysis(
-                new File("/home/ubuntu//as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
-                1,
-                new File("/home/ubuntu/MCC2022_T1_cnfs"),
-                new File("sbsRuns_1.json"),
-                new File("oracleRuns_1.json"),
-                3600,
-                1
+//        runNormal(commandLine);
+//        runSBSOracleAnalysis(
+//                new File("/home/ubuntu//as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
+//                1,
+//                new File("/home/ubuntu/MCC2022_T1_cnfs"),
+//                new File("sbsRuns_1.json"),
+//                new File("oracleRuns_1.json"),
+//                3600,
+//                1
+//        );
+
+//        testSolver(List.of(
+//                new RunTask("SharpSAT-TD-unweighted/default", new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_129.dimacs"), 3600),
+//                new RunTask("SharpSAT-TD-unweighted/default", new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_150.dimacs"), 3600),
+//                new RunTask("SharpSAT-TD-unweighted/default", new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_151.dimacs"), 3600),
+//                new RunTask("SharpSAT-TD-unweighted/default", new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_133.dimacs"), 3600),
+//                new RunTask("SharpSAT-TD-unweighted/default", new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_131.dimacs"), 3600),
+//                new RunTask("Narsimha-track1v-51fd045537919d/track1_conf1.sh", new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_168.dimacs"), 3600),
+//                new RunTask("dpmcpre/1pre1mp1", new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_166.dimacs"), 3600)
+//        ), new File("test_Run_tt.json"), 1);
+
+        runNormalMultiple(
+                generateFileNames(
+                        new File("/home/ubuntu/as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
+                        1,
+                        new File("/home/ubuntu/MCC2022_T1_cnfs")
+                        ),
+                new File("/home/ubuntu/as4moco/AutoFolio/mcc2022_T1_F1_2000I.pkl"),
+                new File("MCC22_T1_F1_2000I.json")
         );
+
+        //tester();
 
         System.exit(0);
 
+    }
+
+    private static void tester() throws IOException, InterruptedException, ExecutionException {
+        File cnf = new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_019.dimacs");
+        int timeout = 140;
+        testSolver(List.of(
+                new RunTask("ExactMC/ExactMC_Arjun.sh", cnf, timeout),
+                new RunTask("ExactMC/ExactMC_BE.sh", cnf, timeout),
+                new RunTask("Narsimha-track1v-51fd045537919d/track1_conf1.sh", cnf, timeout),
+                new RunTask("Narsimha-track1v-51fd045537919d/track1_conf2.sh", cnf, timeout),
+                new RunTask("Narsimha-track1v-7112ef8eb466e9475/track1_conf1.sh", cnf, timeout),
+                new RunTask("Narsimha-track1v-7112ef8eb466e9475/track1_conf2.sh", cnf, timeout),
+                new RunTask("SharpSAT-TD-unweighted/default", cnf, timeout),
+                new RunTask("TwG/1.sh", cnf, timeout),
+                new RunTask("TwG/2.sh", cnf, timeout),
+                new RunTask("c2d/default", cnf, timeout),
+                new RunTask("d4/default.sh", cnf, timeout),
+                new RunTask("dpmcpre/1pre1mp0", cnf, timeout),
+                new RunTask("dpmcpre/1pre1mp1", cnf, timeout),
+                new RunTask("gpmc/track1", cnf, timeout),
+                new RunTask("gpmc_r2/track1", cnf, timeout),
+                new RunTask("mtmc/default", cnf, timeout)
+
+        ), new File("test_Run_019.json"), 1);
     }
 
     /**
