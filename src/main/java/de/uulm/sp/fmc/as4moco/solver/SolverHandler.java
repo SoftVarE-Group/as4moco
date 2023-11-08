@@ -30,6 +30,7 @@ public class SolverHandler {
             } catch (InterruptedException e) {
                 System.out.println("Solver interrupted!");
                 solverResponses.add(new SolverResponse(solver, SolverStatusEnum.ERROR, Optional.empty()));
+                throw new InterruptedException();
             }
         }
         return solverResponses;
