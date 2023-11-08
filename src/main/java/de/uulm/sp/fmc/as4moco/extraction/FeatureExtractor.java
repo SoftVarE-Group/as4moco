@@ -23,7 +23,7 @@ public class FeatureExtractor {
         analysisStepHandler.initializeHandler(analysisMap);
     }
 
-    public String extractFeatures(File file){
+    public String extractFeatures(File file) throws InterruptedException{
         return analysisStepHandler.getSingleAnalysis(file).stream().filter(Objects::nonNull).map(FeatureStep::values).flatMap(List::stream).collect(Collectors.joining(","));
     }
 
