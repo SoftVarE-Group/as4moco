@@ -1,9 +1,16 @@
 package de.uulm.sp.fmc.as4moco.tools;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.uulm.sp.fmc.as4moco.SolvingRun;
+import de.uulm.sp.fmc.as4moco.solver.SolverInterface;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -12,19 +19,24 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FoldRunExtractor {
 
     public static void main(String[] args) {
-        File as4mocoInput = new File("");
-        File sbsInput = new File("");
-        File oracleInput = new File("");
-        File outputFile = new File("");
 
+
+        File folder = new File(""); //todo insert run folder
+        File as4mocoInput = Arrays.stream(Objects.requireNonNull(folder.listFiles())).filter(File::isFile).filter(e -> e.getName().startsWith("MCC")).findAny().orElseThrow();
+        File sbsInput = Arrays.stream(Objects.requireNonNull(folder.listFiles())).filter(File::isFile).filter(e -> e.getName().startsWith("sbs")).findAny().orElseThrow();
+        File oracleInput = Arrays.stream(Objects.requireNonNull(folder.listFiles())).filter(File::isFile).filter(e -> e.getName().startsWith("oracle")).findAny().orElseThrow();
+        File outputFile = new File(folder, "results.csv");
+        extractCSV(as4mocoInput, sbsInput, oracleInput, outputFile);
 
     }
 
@@ -32,6 +44,16 @@ public class FoldRunExtractor {
        try (CSVPrinter csvPrinter = new CSVPrinter(Files.newBufferedWriter(outputFile.toPath(), Charset.defaultCharset(), StandardOpenOption.CREATE), CSVFormat.Builder.create().build())){
            ObjectMapper mapper = new ObjectMapper();
            mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
+
+           SimpleModule simpleModule = new SimpleModule();
+           simpleModule.addDeserializer(SolverInterface.class, new JsonDeserializer<SolverInterface>() {
+               @Override
+               public SolverInterface deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+                   JsonNode jsonNode = p.getCodec().readTree(p);
+                   return null;
+               }
+           });
+           mapper.registerModule(simpleModule);
 
            //header
            csvPrinter.print("instance");
