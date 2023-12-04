@@ -50,7 +50,19 @@ public class FoldRunExtractor {
                @Override
                public SolverInterface deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
                    JsonNode jsonNode = p.getCodec().readTree(p);
-                   return null;
+                   String path = jsonNode.get("folder").asText();
+                   String exec = jsonNode.get("executable").asText();
+                   return new SolverInterface() {
+                       @Override
+                       public File getFolder() {
+                           return new File(path);
+                       }
+
+                       @Override
+                       public String getExecutable() {
+                           return exec;
+                       }
+                   };
                }
            });
            mapper.registerModule(simpleModule);
@@ -61,6 +73,9 @@ public class FoldRunExtractor {
            csvPrinter.print("sbsRun");
            csvPrinter.print("oracleRun");
            csvPrinter.print("score");
+           csvPrinter.print("sbs-oracle");
+           csvPrinter.print("sbs-as4moco");
+           csvPrinter.print("as4moco-oracle");
            csvPrinter.println();
 
 
@@ -78,12 +93,21 @@ public class FoldRunExtractor {
                double oracleTime = oracleRuns.get(as4mocoRun.cnfFile()).duration();
                double score = -1;
                if (sbsTime - oracleTime > 0) score = (as4mocoTime - oracleTime) / (sbsTime - oracleTime);
+               SolverInterface as4moco = as4mocoRun.solverResponse().solver();
+               SolverInterface sbs = sbsRuns.get(as4mocoRun.cnfFile()).solverResponse().solver();
+               SolverInterface oracle = oracleRuns.get(as4mocoRun.cnfFile()).solverResponse().solver();
+
+
+
 
                csvPrinter.print(as4mocoRun.cnfFile().getName());
                csvPrinter.print(as4mocoTime);
                csvPrinter.print(sbsTime);
                csvPrinter.print(oracleTime);
                csvPrinter.print(score);
+               csvPrinter.print(compareSolver(sbs, oracle));
+               csvPrinter.print(compareSolver(sbs, as4moco));
+               csvPrinter.print(compareSolver(as4moco, oracle));
                csvPrinter.println();
            }
 
@@ -91,6 +115,10 @@ public class FoldRunExtractor {
        } catch (IOException e) {
            throw new RuntimeException(e);
        }
+    }
+
+    private static boolean compareSolver(SolverInterface a, SolverInterface b){
+        return a.getFolder().equals(b.getFolder()) && Objects.equals(a.getExecutable(), b.getExecutable());
     }
 
 }
