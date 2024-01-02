@@ -16,17 +16,17 @@ public interface SolverInterface {
     default SolverResponse parseOutput(String combinedOutput, int statusCode) {
         if (statusCode == 0 || statusCode == 42){
             if (combinedOutput.contains("TIME LIMIT OF") && combinedOutput.contains("EXCEEDED"))
-                return new SolverResponse(this, SolverStatusEnum.TIMEOUT, Optional.empty());
+                return new SolverResponse(SolverMap.getName(this), SolverStatusEnum.TIMEOUT, Optional.empty());
             Optional<Double> count = combinedOutput.lines().filter(e -> e.startsWith("c s exact"))
                     .map(SolverInterface::mapMultiStringToDouble)
                     .filter(Optional::isPresent).map(Optional::get).findAny(); //TODO
             if (count.isEmpty()) count = combinedOutput.lines().filter(e -> e.startsWith("c s approx"))
                     .map(SolverInterface::mapMultiStringToDouble)
                     .filter(Optional::isPresent).map(Optional::get).findAny();
-            if (count.isPresent()) return new SolverResponse(this, SolverStatusEnum.OK, count);
+            if (count.isPresent()) return new SolverResponse(SolverMap.getName(this), SolverStatusEnum.OK, count);
         }
         System.err.println(combinedOutput);
-        return new SolverResponse(this, SolverStatusEnum.ERROR, Optional.empty());
+        return new SolverResponse(SolverMap.getName(this), SolverStatusEnum.ERROR, Optional.empty());
     }
 
     default Map<String, String> getEnvironment(int timeout){

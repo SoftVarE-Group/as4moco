@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,27 +42,6 @@ public class FoldRunExtractor {
            ObjectMapper mapper = new ObjectMapper();
            mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
 
-           SimpleModule simpleModule = new SimpleModule();
-           simpleModule.addDeserializer(SolverInterface.class, new JsonDeserializer<SolverInterface>() {
-               @Override
-               public SolverInterface deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
-                   JsonNode jsonNode = p.getCodec().readTree(p);
-                   String path = jsonNode.get("folder").asText();
-                   String exec = jsonNode.get("executable").asText();
-                   return new SolverInterface() {
-                       @Override
-                       public File getFolder() {
-                           return new File(path);
-                       }
-
-                       @Override
-                       public String getExecutable() {
-                           return exec;
-                       }
-                   };
-               }
-           });
-           mapper.registerModule(simpleModule);
 
            //header
            csvPrinter.print("instance");
@@ -93,9 +69,9 @@ public class FoldRunExtractor {
                double oracleTime = oracleRuns.get(as4mocoRun.cnfFile()).duration();
                double score = -1;
                if (sbsTime - oracleTime > 0) score = (as4mocoTime - oracleTime) / (sbsTime - oracleTime);
-               SolverInterface as4moco = as4mocoRun.solverResponse().solver();
-               SolverInterface sbs = sbsRuns.get(as4mocoRun.cnfFile()).solverResponse().solver();
-               SolverInterface oracle = oracleRuns.get(as4mocoRun.cnfFile()).solverResponse().solver();
+               Optional<String> as4moco = as4mocoRun.solverResponse().solver();
+               Optional<String> sbs = sbsRuns.get(as4mocoRun.cnfFile()).solverResponse().solver();
+               Optional<String> oracle = oracleRuns.get(as4mocoRun.cnfFile()).solverResponse().solver();
 
 
 
@@ -117,8 +93,8 @@ public class FoldRunExtractor {
        }
     }
 
-    private static boolean compareSolver(SolverInterface a, SolverInterface b){
-        return a.getFolder().equals(b.getFolder()) && Objects.equals(a.getExecutable(), b.getExecutable());
+    private static boolean compareSolver(Optional<String> a, Optional<String> b){
+        return a.equals(b);
     }
 
 }

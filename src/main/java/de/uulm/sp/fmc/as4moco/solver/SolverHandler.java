@@ -26,10 +26,10 @@ public class SolverHandler {
                 if (solverResponse.status().equals(SolverStatusEnum.OK)) break;
             } catch (IOException e) {
                 System.out.println("Solver Error!");
-                solverResponses.add(new SolverResponse(solver, SolverStatusEnum.ERROR, Optional.empty()));
+                solverResponses.add(new SolverResponse(SolverMap.getName(solver), SolverStatusEnum.ERROR, Optional.empty()));
             } catch (InterruptedException e) {
                 System.out.println("Solver interrupted!");
-                solverResponses.add(new SolverResponse(solver, SolverStatusEnum.ERROR, Optional.empty()));
+                solverResponses.add(new SolverResponse(SolverMap.getName(solver), SolverStatusEnum.ERROR, Optional.empty()));
                 throw new InterruptedException();
             }
         }
@@ -38,7 +38,7 @@ public class SolverHandler {
 
     private static  SolverResponse handleSolver(SolverInterface solver, int timeout, File cnf) throws IOException, InterruptedException {
         List<String> commands = new ArrayList<>(solver.getParameters(cnf));
-        commands.add(0, Path.of(solver.getFolder().getAbsolutePath(), solver.getExecutable()).toString());
+        commands.addFirst(Path.of(solver.getFolder().getAbsolutePath(), solver.getExecutable()).toString());
         ProcessBuilder processBuilder = new ProcessBuilder(commands).redirectErrorStream(true);
         processBuilder.directory(solver.getFolder().getAbsoluteFile());
         processBuilder.environment().putAll(solver.getEnvironment(timeout));
@@ -47,7 +47,7 @@ public class SolverHandler {
         try {
             if (!ps.waitFor(timeout, TimeUnit.SECONDS)) {
                 killProcesses(ps.toHandle());
-                return new SolverResponse(solver, SolverStatusEnum.TIMEOUT, Optional.empty());
+                return new SolverResponse(SolverMap.getName(solver), SolverStatusEnum.TIMEOUT, Optional.empty());
             }
         } catch (InterruptedException e ){
             killProcesses(ps.toHandle());

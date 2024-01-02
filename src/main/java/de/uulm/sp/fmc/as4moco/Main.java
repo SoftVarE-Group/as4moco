@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.uulm.sp.fmc.as4moco.selection.messages.SolverBudget;
 import de.uulm.sp.fmc.as4moco.solver.SolverHandler;
+import de.uulm.sp.fmc.as4moco.solver.SolverMap;
 import de.uulm.sp.fmc.as4moco.solver.SolverResponse;
 import de.uulm.sp.fmc.as4moco.solver.SolverStatusEnum;
 import org.apache.commons.cli.*;
@@ -27,7 +28,15 @@ public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
         CommandLine commandLine = parseCommandLine(args, generateOptions());
 
-        runNormal(commandLine);
+        evaluateScenario(
+                new File("/home/ubuntu/as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
+                1,
+                new File("/home/ubuntu/MCC2022_T1_cnfs"),
+                new File("MCC_T1_S1_fullEval.json"),
+                3600
+        );
+
+//        runNormal(commandLine);
 //        runSBSOracleAnalysis(
 //                new File("/home/ubuntu//as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
 //                1,
@@ -192,6 +201,28 @@ public class Main {
             });
             testSolver(sbsList, sbsOut, nThreads);
             testSolver(oracleList, oracleOut, nThreads);
+        }
+    }
+
+    /**
+     * Fully evaluates a scenario
+     * @param csvFile csv file with split
+     * @param split which split to evaluate
+     * @param cnfFolder folder with cnfs
+     * @param out file to save runs to
+     * @param timeout timeout for solver
+     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    private static void evaluateScenario(File csvFile, int split, File cnfFolder, File out, int timeout) throws IOException, ExecutionException, InterruptedException {
+        try (CSVParser parser = CSVParser.parse(csvFile, Charset.defaultCharset(), CSVFormat.Builder.create(CSVFormat.DEFAULT).setHeader().setAllowMissingColumnNames(true).setSkipHeaderRecord(true).build())) {
+            List<RunTask> tasks = new ArrayList<>();
+            parser.stream().filter(e -> Integer.parseInt(e.get("Split")) == split).forEach(e -> {
+                File instance = new File( cnfFolder.getAbsolutePath()+ File.separator + "mc2022_track1_%03d.dimacs".formatted(Integer.parseInt(e.get("InstanceNo"))));
+                SolverMap.getNames().forEach(s -> tasks.add(new RunTask(s, instance, timeout)));
+            });
+            testSolver(tasks, out, 1);
         }
     }
 

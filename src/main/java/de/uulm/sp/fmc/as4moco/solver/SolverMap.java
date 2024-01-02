@@ -218,6 +218,17 @@ public class SolverMap {
         return solvers.get(name);
     }
 
+    public static Optional<String> getName(SolverInterface solverInterface){
+        return solvers.entrySet().stream().filter(e -> e.getValue().getExecutable().equals(solverInterface.getExecutable()) && e.getValue().getFolder().equals(solverInterface.getFolder())).map(Map.Entry::getKey).findAny();
+    }
+
+    public static List<SolverInterface> getSolvers(){
+        return List.copyOf(solvers.values());
+    }
+
+    public static List<String> getNames(){
+        return List.copyOf(solvers.keySet());
+    }
 
 
 }
