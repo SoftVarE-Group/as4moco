@@ -48,4 +48,6 @@ public interface SolverInterface {
         }).filter(Objects::nonNull).findAny();
     }
 
+
+
 }

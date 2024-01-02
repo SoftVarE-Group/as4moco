@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class SolverMap {
 
@@ -177,6 +176,17 @@ public class SolverMap {
                 @Override
                 public String getExecutable() {
                     return "starexec_run_2.sh";
+                }
+            }),
+            Map.entry("mtmc/default", new SolverInterface() {
+                @Override
+                public File getFolder() {
+                    return new File("workingSolvers/MC2022_Solvers/Track1_MC/mtmc/bin");
+                }
+
+                @Override
+                public String getExecutable() {
+                    return "starexec_run_default";
                 }
             }),
             Map.entry("ExactMC/ExactMC_Arjun.sh", new SolverInterface() {
