@@ -28,13 +28,13 @@ public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
         CommandLine commandLine = parseCommandLine(args, generateOptions());
 
-        evaluateScenario(
-                new File("/home/ubuntu/as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
-                1,
-                new File("/home/ubuntu/MCC2022_T1_cnfs"),
-                new File("MCC_T1_S1_fullEval.json"),
-                3600
-        );
+//        evaluateScenario(
+//                new File("/home/ubuntu/as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
+//                1,
+//                new File("/home/ubuntu/MCC2022_T1_cnfs"),
+//                new File("MCC_T1_S1_fullEval.json"),
+//                3600
+//        );
 
 //        runNormal(commandLine);
 //        runSBSOracleAnalysis(
@@ -57,15 +57,15 @@ public class Main {
 //                new RunTask("dpmcpre/1pre1mp1", new File("/home/ubuntu/mcc2022/cnfs/MCC2022_track1-complete/mc2022_track1_166.dimacs"), 3600)
 //        ), new File("test_Run_tt.json"), 1);
 
-//        runNormalMultiple(
-//                generateFileNames(
-//                        new File("/home/ubuntu/as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
-//                        1,
-//                        new File("/home/ubuntu/MCC2022_T1_cnfs")
-//                        ),
-//                new File("/home/ubuntu/as4moco/AutoFolio/mcc2022_T1_F1_2000I.pkl"),
-//                new File("MCC22_T1_F1_2000I.json")
-//        );
+        runNormalMultiple(
+                generateFileNames(
+                        new File("/home/ubuntu/as4moco/AutoFolio/examples/MCC2022_T1_randomSplits_re/split.csv"),
+                        1,
+                        new File("/home/ubuntu/MCC2022_T1_cnfs")
+                        ),
+                new File("/home/ubuntu/as4moco/AutoFolio/mcc2022_T1_F1_4000I_re.pkl"),
+                new File("MCC22_T1_F1_4000I_re.json")
+        );
 
         //tester();
 
