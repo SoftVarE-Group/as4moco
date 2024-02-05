@@ -6,10 +6,12 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.uulm.sp.fmc.as4moco.data.FullRun;
+import de.uulm.sp.fmc.as4moco.data.SolverRunInstance;
+import de.uulm.sp.fmc.as4moco.data.SolvingRun;
 import de.uulm.sp.fmc.as4moco.selection.messages.SolverBudget;
 import de.uulm.sp.fmc.as4moco.solver.SolverHandler;
 import de.uulm.sp.fmc.as4moco.solver.SolverMap;
-import de.uulm.sp.fmc.as4moco.solver.SolverResponse;
 import de.uulm.sp.fmc.as4moco.solver.SolverStatusEnum;
 import org.apache.commons.cli.*;
 import org.apache.commons.csv.CSVFormat;
@@ -142,8 +144,8 @@ public class Main {
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    private static List<SolvingRun> runNormalMultiple(List<File> cnfs, File modelFile, File saveFile) throws IOException, ExecutionException, InterruptedException {
-        List<SolvingRun> solvingRuns = new ArrayList<>(cnfs.size());
+    private static List<FullRun> runNormalMultiple(List<File> cnfs, File modelFile, File saveFile) throws IOException, ExecutionException, InterruptedException {
+        List<FullRun> solvingRuns = new ArrayList<>(cnfs.size());
 
         JsonFactory factory = new JsonFactory();
 
@@ -157,18 +159,17 @@ public class Main {
             out.writeStartArray();
             for (File cnf : cnfs) {
                 System.out.println("Run file "+cnf);
+                FullRun solvingRun;
                 Instant before = Instant.now();
-                SolverResponse solverResponse;
                 try {
-                    solverResponse = workflowManager.runSolving(cnf);
+                    solvingRun = workflowManager.runSolving(cnf);
                 } catch (Exception e){
-                    solverResponse = new SolverResponse(null, SolverStatusEnum.ERROR, Optional.empty());
+                    Instant after = Instant.now();
+                    solvingRun = new FullRun(cnf, before, after, Duration.between(before, after).toMillis() / 1000d, new ArrayList<>(), new SolverRunInstance(Optional.empty(), SolverStatusEnum.ERROR, Optional.empty(), 0));
                     System.out.println("Error in Run for "+cnf);
                     e.printStackTrace();
                 }
-                Instant after = Instant.now();
 
-                SolvingRun solvingRun = new SolvingRun(cnf, before, after, Duration.between(before, after).toMillis() / 1000d, solverResponse);
                 out.writeObject(solvingRun);
 
                 solvingRuns.add(solvingRun);
@@ -252,11 +253,11 @@ public class Main {
             tasks.forEach(task -> completionService.submit(() -> {
                 System.out.println("Run task "+task);
                 Instant before = Instant.now();
-                SolverResponse solverResponse;
+                SolverRunInstance solverResponse;
                 try {
-                    solverResponse = SolverHandler.runSolvers(new SolverBudget[]{new SolverBudget(task.solver, task.timeout)}, task.cnf).get(0);
+                    solverResponse = SolverHandler.runSolvers(new SolverBudget[]{new SolverBudget(task.solver, task.timeout)}, task.cnf).solverResponses().get(0);
                 } catch (Exception e){
-                    solverResponse = new SolverResponse(null, SolverStatusEnum.ERROR, Optional.empty());
+                    solverResponse = new SolverRunInstance(null, SolverStatusEnum.ERROR, Optional.empty(), 0);
                     System.out.println("Error in Run of solver "+ task.solver +" for "+task.cnf());
                     e.printStackTrace();
                 }

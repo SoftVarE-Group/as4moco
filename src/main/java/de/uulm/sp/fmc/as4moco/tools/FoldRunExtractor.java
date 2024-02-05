@@ -1,16 +1,9 @@
 package de.uulm.sp.fmc.as4moco.tools;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.uulm.sp.fmc.as4moco.SolvingRun;
-import de.uulm.sp.fmc.as4moco.solver.SolverInterface;
+import de.uulm.sp.fmc.as4moco.data.SolvingRun;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 

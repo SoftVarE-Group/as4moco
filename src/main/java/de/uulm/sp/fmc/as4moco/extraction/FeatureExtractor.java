@@ -23,9 +23,15 @@ public class FeatureExtractor {
         analysisStepHandler.initializeHandler(analysisMap);
     }
 
-    public String extractFeatures(File file) throws InterruptedException{
-        return analysisStepHandler.getSingleAnalysis(file).stream().filter(Objects::nonNull).map(FeatureStep::values).flatMap(List::stream).collect(Collectors.joining(","));
-    }
+    public FeatureVector extractFeatures(File file) throws InterruptedException{
+        List<FeatureStep> analysisSteps = analysisStepHandler.getSingleAnalysis(file).stream().filter(Objects::nonNull).toList();
+        return new FeatureVector(
+                analysisSteps.stream().map(FeatureStep::values).flatMap(List::stream).collect(Collectors.joining(",")),
+                analysisSteps.stream().collect(Collectors.toMap(FeatureStep::name, FeatureStep::usedRuntime)),
+                analysisSteps.stream().collect(Collectors.toMap(FeatureStep::name, FeatureStep::featureStatus))
+                );
 
+
+    }
 
 }

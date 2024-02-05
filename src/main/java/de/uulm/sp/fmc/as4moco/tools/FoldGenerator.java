@@ -41,7 +41,7 @@ public class FoldGenerator {
         try(BufferedReader in = new BufferedReader(new FileReader(input));
             PrintWriter out = new PrintWriter(new FileWriter(output, false))) {
             System.out.println("starting with "+input);
-            in.lines().filter(line -> !containsAny(line, toRemove)).filter(line -> !line.contains("mtmc/default")).forEach(out::println);
+            in.lines().filter(line -> !containsAny(line, toRemove)).forEach(out::println);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
