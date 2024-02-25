@@ -1,10 +1,10 @@
 package de.uulm.sp.fmc.as4moco.tools;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.uulm.sp.fmc.as4moco.SolvingRun;
-import de.uulm.sp.fmc.as4moco.solver.SolverStatusEnum;
+import de.uulm.sp.fmc.as4moco.data.SolvingRun;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -16,15 +16,15 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class ReRunExtractor {
+public class ReRunScenarioExtractor {
 
     public static void main(String[] args) {
 
 
-        File folder = new File("/home/ubuntu/raphael-dunkel-bachelor/data/Remeasurement_MCC"); //todo insert run folder
+        File folder = new File(""); //todo insert run folder
         HashMap<File, List<SolvingRun>> runs = new HashMap<>();
         Arrays.stream(Objects.requireNonNull(folder.listFiles())).filter(File::isFile).filter(e -> e.getName().startsWith("MCC"))
-                .flatMap(ReRunExtractor::readJson).forEach(e -> {
+                .flatMap(ReRunScenarioExtractor::readJson).forEach(e -> {
                     runs.putIfAbsent(e.cnfFile(), new ArrayList<>());
                     runs.get(e.cnfFile()).add(e);
                 });
@@ -67,7 +67,7 @@ public class ReRunExtractor {
     }
 
     private static Stream<SolvingRun> readJson(File e) {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);;
         mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
         try {
             List<SolvingRun> runs =  mapper.readValue(e, mapper.getTypeFactory().constructCollectionType(List.class, SolvingRun.class));

@@ -58,7 +58,7 @@ public class SolverExtractor {
 
             List<SolverTuple> solvers = in.lines().map(e -> e.split(",")).map(e -> new SolverTuple(Integer.parseInt(e[0].substring(14, 17)), e[2], Double.parseDouble(e[3]))).toList();
 
-            return splitMap.entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).map(entry -> {
+            return splitMap.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(entry -> {
                 int i = entry.getKey();
                 List<Integer> splitEntries = entry.getValue();
 

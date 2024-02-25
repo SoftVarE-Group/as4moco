@@ -1,5 +1,6 @@
 package de.uulm.sp.fmc.as4moco.tools;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -32,7 +33,7 @@ public class FoldRunExtractor {
 
     private static void extractCSV(File as4mocoInput, File sbsInput, File oracleInput, File outputFile){
        try (CSVPrinter csvPrinter = new CSVPrinter(Files.newBufferedWriter(outputFile.toPath(), Charset.defaultCharset(), StandardOpenOption.CREATE), CSVFormat.Builder.create().build())){
-           ObjectMapper mapper = new ObjectMapper();
+           ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);;
            mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
 
 
