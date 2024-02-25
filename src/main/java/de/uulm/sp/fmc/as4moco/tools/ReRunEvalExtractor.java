@@ -109,7 +109,7 @@ public class ReRunEvalExtractor {
                     .flatMap(e -> e.getValue().stream())
                     .collect(Collectors.toMap(
                             k -> k.solverResponse().solver().get(),
-                            SolvingRun::duration,
+                            ReRunEvalExtractor::getSolverTime,
                             Double::sum
                     ));
             String minSolver = solverQuality.entrySet().stream().min(Comparator.comparingDouble(Map.Entry::getValue)).get().getKey();
@@ -126,7 +126,7 @@ public class ReRunEvalExtractor {
         return referenceRuns.entrySet().stream()
                 .map( e -> new SimpleEntry<>(
                         e.getKey(),
-                        e.getValue().stream().min(Comparator.comparingDouble(SolvingRun::duration)).get()))
+                        e.getValue().stream().min(Comparator.comparingDouble(ReRunEvalExtractor::getSolverTime)).get()))
                 .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
     }
 
