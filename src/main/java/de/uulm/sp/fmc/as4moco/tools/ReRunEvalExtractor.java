@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.uulm.sp.fmc.as4moco.data.*;
+import de.uulm.sp.fmc.as4moco.solver.SolverStatusEnum;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -58,7 +59,7 @@ public class ReRunEvalExtractor {
 
         try (CSVPrinter csvPrinter = new CSVPrinter(Files.newBufferedWriter(output.toPath(), Charset.defaultCharset(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING), CSVFormat.Builder.create().build())) {
 
-            csvPrinter.printRecord("instance", "as4mocoRun", "sbsRun", "oracleRun", "score", "solver_as4moco", "solver_sbs", "solver_oracle", "as4moco_Pipeline", "instance_hardness");
+            csvPrinter.printRecord("instance", "as4mocoRun", "sbsRun", "oracleRun", "score", "solver_as4moco", "solver_sbs", "solver_oracle", "as4moco_Pipeline", "instance_hardness", "difference_to_oracle", "different_solutions");
             
             for (FullRun as4mocoRun : solvingRuns) {
                 SolvingRun sbsRun = sbsRuns.get(as4mocoRun.cnfFile());
@@ -82,6 +83,8 @@ public class ReRunEvalExtractor {
                     default -> throw new RuntimeException(as4mocoRun.pipelines().getLast().getClass().getName());
                 });
                 csvPrinter.print(getInstanceHardness(referenceRuns.get(as4mocoRun.cnfFile())));
+                csvPrinter.print(as4mocoT - oracleT);
+                csvPrinter.print(checkDifferentSolutions(as4mocoRun, referenceRuns.get(as4mocoRun.cnfFile())));
                 csvPrinter.println();
             }
 
@@ -92,7 +95,32 @@ public class ReRunEvalExtractor {
 
     }
 
-   
+    private static SolutionConsistency checkDifferentSolutions(FullRun as4mocoRun, List<SolvingRun> referenceRuns) {
+        List<Double> stats = referenceRuns.stream().filter(e -> e.solverResponse().status().equals(SolverStatusEnum.OK)).filter(e -> e.solverResponse().solution().isPresent()).map(e -> e.solverResponse().solution().get()).sorted().toList();
+        if (stats.isEmpty()) return SolutionConsistency.ALL_SAME;
+        double median = stats.get(stats.size() / 2);
+        boolean differencesInRef;
+        boolean differenceWithRun;
+        if (stats.stream().allMatch(e -> e.isInfinite() )) differencesInRef = false;
+        else differencesInRef = ! stats.stream().allMatch(e -> relativeDifferenceMCC(e, median));
+        if (as4mocoRun.bestResponse().status().equals(SolverStatusEnum.OK)){
+            double as4mocoResponese = as4mocoRun.bestResponse().solution().orElseThrow();
+            if (Double.isInfinite(median) && Double.isInfinite(as4mocoResponese)) differenceWithRun = false;
+            else differenceWithRun = ! relativeDifferenceMCC(as4mocoResponese, median);
+            if (differencesInRef && differenceWithRun) return SolutionConsistency.MULTIPLE_DIFFERENCES;
+            if (differenceWithRun) return SolutionConsistency.DIFFERENT_AS4MOCO;
+        }
+        if (differencesInRef) return SolutionConsistency.DIFFERENT_REFERENCE;
+        return SolutionConsistency.ALL_SAME;
+    }
+
+    private static boolean relativeDifferenceMCC(double value, double median) {
+        double factor = value / median;
+        double alpha = 0.8;
+        return 1/ (1+alpha)<= factor && factor <= 1 + alpha; // MCC approx
+        //return Math.abs(Math.log10(value) - Math.log10(median)) * 100 / Math.log10(Math.exp(1)) <= 0.001; // MCC exact
+    }
+
 
     private static double getInstanceHardness(List<SolvingRun> referenceRuns) {
         return referenceRuns.stream().mapToDouble(ReRunEvalExtractor::getSolverTime).sum() / referenceRuns.size();
@@ -164,5 +192,9 @@ public class ReRunEvalExtractor {
             case OK -> run.duration();
             case ERROR, TIMEOUT -> 3600;
         };
+    }
+
+    private enum SolutionConsistency{
+        ALL_SAME, DIFFERENT_AS4MOCO, DIFFERENT_REFERENCE, MULTIPLE_DIFFERENCES
     }
 }
