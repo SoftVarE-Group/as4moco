@@ -56,10 +56,11 @@ public class ReRunEvalExtractor {
         solvingRuns.sort(Comparator.comparing(e -> e.cnfFile().getName()));
         Map<File, SolvingRun> sbsRuns = getSBS(referenceRuns, solvingMap);
         Map<File, SolvingRun> oracleRuns = getOracle(referenceRuns);
+        Map<File, Integer> foldMap = solvingMap.entrySet().stream().collect(Collectors.toMap(f -> f.getValue().getFirst().cnfFile(), Map.Entry::getKey));
 
         try (CSVPrinter csvPrinter = new CSVPrinter(Files.newBufferedWriter(output.toPath(), Charset.defaultCharset(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING), CSVFormat.Builder.create().build())) {
 
-            csvPrinter.printRecord("instance", "as4mocoRun", "sbsRun", "oracleRun", "score", "solver_as4moco", "solver_sbs", "solver_oracle", "as4moco_Pipeline", "instance_hardness", "difference_to_oracle", "different_solutions");
+            csvPrinter.printRecord("instance", "as4mocoRun", "sbsRun", "oracleRun", "score", "solver_as4moco", "solver_sbs", "solver_oracle", "as4moco_Pipeline", "instance_hardness", "difference_to_oracle", "different_solutions", "Fold");
             
             for (FullRun as4mocoRun : solvingRuns) {
                 SolvingRun sbsRun = sbsRuns.get(as4mocoRun.cnfFile());
@@ -85,6 +86,7 @@ public class ReRunEvalExtractor {
                 csvPrinter.print(getInstanceHardness(referenceRuns.get(as4mocoRun.cnfFile())));
                 csvPrinter.print(as4mocoT - oracleT);
                 csvPrinter.print(checkDifferentSolutions(as4mocoRun, referenceRuns.get(as4mocoRun.cnfFile())));
+                csvPrinter.print(foldMap.get(as4mocoRun.cnfFile()));
                 csvPrinter.println();
             }
 
