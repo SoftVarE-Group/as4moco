@@ -56,7 +56,7 @@ public class ReRunEvalExtractor {
         solvingRuns.sort(Comparator.comparing(e -> e.cnfFile().getName()));
         Map<File, SolvingRun> sbsRuns = getSBS(referenceRuns, solvingMap);
         Map<File, SolvingRun> oracleRuns = getOracle(referenceRuns);
-        Map<File, Integer> foldMap = solvingMap.entrySet().stream().collect(Collectors.toMap(f -> f.getValue().getFirst().cnfFile(), Map.Entry::getKey));
+        Map<File, Integer> foldMap = solvingMap.entrySet().stream().flatMap(e -> e.getValue().stream().map(f -> new SimpleEntry<>(f.cnfFile(), e.getKey()))).collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
 
         try (CSVPrinter csvPrinter = new CSVPrinter(Files.newBufferedWriter(output.toPath(), Charset.defaultCharset(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING), CSVFormat.Builder.create().build())) {
 
