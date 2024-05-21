@@ -49,7 +49,11 @@ public class SolverHandler {
         commands.addFirst(Path.of(solver.getFolder().getAbsolutePath(), solver.getExecutable()).toString());
         ProcessBuilder processBuilder = new ProcessBuilder(commands).redirectErrorStream(true);
         processBuilder.directory(solver.getFolder().getAbsoluteFile());
-        processBuilder.environment().putAll(solver.getEnvironment(timeout));
+        Map<String, String> newEnv = solver.getEnvironment(timeout);
+        String buffer;
+        if ( (buffer = processBuilder.environment().get("STAREXEC_MAX_MEM")) != null) newEnv.put("STAREXEC_MAX_MEM", "" + Math.floor(Integer.parseInt(buffer) * 0.45) );
+        if ( (buffer = processBuilder.environment().get("STAREXEC_MAX_WRITE")) != null) newEnv.put("STAREXEC_MAX_WRITE", "" + Math.floor(Integer.parseInt(buffer) * 0.45) );
+        processBuilder.environment().putAll(newEnv);
         final Process ps = processBuilder.start();
 
         try {
