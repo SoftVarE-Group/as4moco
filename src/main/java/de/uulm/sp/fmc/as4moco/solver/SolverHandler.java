@@ -33,11 +33,11 @@ public class SolverHandler {
             } catch (IOException e) {
                 Duration duration = Duration.between(before, Instant.now());
                 System.out.println("Solver Error!");
-                solverResponses.add(new SolverRunInstance(SolverMap.getName(solver), SolverStatusEnum.ERROR, Optional.empty(), duration.toMillis() / 1000d));
+                solverResponses.add(new SolverRunInstance(SolverMap.getName(solver), SolverStatusEnum.ERROR, Optional.empty(), duration.toMillis() / 1000d, SolverType.ERR));
             } catch (InterruptedException e) {
                 Duration duration = Duration.between(before, Instant.now());
                 System.out.println("Solver interrupted!");
-                solverResponses.add(new SolverRunInstance(SolverMap.getName(solver), SolverStatusEnum.ERROR, Optional.empty(), duration.toMillis() / 1000d));
+                solverResponses.add(new SolverRunInstance(SolverMap.getName(solver), SolverStatusEnum.ERROR, Optional.empty(), duration.toMillis() / 1000d, SolverType.ERR));
                 throw new InterruptedException();
             }
         }
@@ -55,11 +55,14 @@ public class SolverHandler {
         if ( (buffer = processBuilder.environment().get("STAREXEC_MAX_WRITE")) != null) newEnv.put("STAREXEC_MAX_WRITE", "" + Math.floor(Integer.parseInt(buffer) * 0.45) );
         processBuilder.environment().putAll(newEnv);
         final Process ps = processBuilder.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            killProcesses(ps.toHandle());
+        }));
 
         try {
             if (!ps.waitFor(timeout, TimeUnit.SECONDS)) {
                 killProcesses(ps.toHandle());
-                return new SolverResponse(SolverMap.getName(solver), SolverStatusEnum.TIMEOUT, Optional.empty());
+                return new SolverResponse(SolverMap.getName(solver), SolverStatusEnum.TIMEOUT, Optional.empty(), SolverType.ERR);
             }
         } catch (InterruptedException e ){
             killProcesses(ps.toHandle());

@@ -13,6 +13,7 @@ import de.uulm.sp.fmc.as4moco.selection.messages.SolverBudget;
 import de.uulm.sp.fmc.as4moco.solver.SolverHandler;
 import de.uulm.sp.fmc.as4moco.solver.SolverMap;
 import de.uulm.sp.fmc.as4moco.solver.SolverStatusEnum;
+import de.uulm.sp.fmc.as4moco.solver.SolverType;
 import org.apache.commons.cli.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -20,6 +21,7 @@ import org.apache.commons.csv.CSVParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.Instant;
@@ -29,7 +31,8 @@ import java.util.concurrent.*;
 public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
         CommandLine commandLine = parseCommandLine(args, generateOptions());
-        runNormal(commandLine);
+        runMCC(commandLine);
+//        runNormal(commandLine);
 // examples for other functionality
 //        evaluateScenario(
 //                new File("/home/ubuntu/as4moco/AutoFolio/examples/MCC2022_T1_randomSplits/split.csv"),
@@ -69,7 +72,76 @@ public class Main {
 //                new File("MCC22_T1_F1_4000I_re.json")
 //        );
 
-        System.exit(0);
+        System.exit(-1);
+
+    }
+
+    private static void runMCC(CommandLine commandLine) {
+        var outStream = new PrintStream(System.out) {
+            @Override
+            public void println(String x) {
+                super.println("c o "+ x);
+            }
+
+            @Override
+            public PrintStream printf(String format, Object... args) {
+                return super.printf("c o "+format, args);
+            }
+
+            public void printNormalln(String x){
+                super.println(x);
+            }
+        };
+        System.setOut(outStream);
+        System.setErr(new PrintStream(System.out) {
+            @Override
+            public void println(String x) {
+                super.println("c o E "+ x);
+            }
+        });
+
+        Runtime.getRuntime().addShutdownHook(new Thread( () -> {
+            try {
+                if (commandLine.hasOption("timeout")) {
+                    Thread.currentThread().wait(1000 * Long.parseLong(commandLine.getOptionValue("timeout")));
+                    System.exit(-1);
+                }
+            } catch (InterruptedException e) {
+            //ignore
+            }
+        }));
+        try (WorkflowManager workflowManager = new WorkflowManager(new File(commandLine.getOptionValue("modelFile")))) {
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
+
+            FullRun solvingRun;
+            Instant before = Instant.now();
+            File cnf = new File(commandLine.getOptionValue("cnfFile"));
+            try {
+                solvingRun = workflowManager.runSolving(cnf);
+            } catch (Exception e) {
+                Instant after = Instant.now();
+                solvingRun = new FullRun(cnf, before, after, Duration.between(before, after).toMillis() / 1000d, new ArrayList<>(), new SolverRunInstance(Optional.empty(), SolverStatusEnum.ERROR, Optional.empty(), 0, SolverType.ERR));
+                System.out.println("Error in Run for " + cnf);
+            }
+
+            System.out.println(mapper.writeValueAsString(solvingRun));
+            if (solvingRun.bestResponse().solution().isEmpty()) {
+                outStream.printNormalln("s UNKNOWN");
+                System.exit(-1);
+            }
+            else if (solvingRun.bestResponse().solution().get() == 0) outStream.printNormalln("s UNSATISFIABLE");
+            else outStream.printNormalln("s SATISFIABLE");
+
+            outStream.printNormalln("c s type mc");
+            outStream.printNormalln("c s log10-estimate " + Math.log10(solvingRun.bestResponse().solution().get()));
+            outStream.printNormalln("c s  " + solvingRun.bestResponse().solverType() + " double float " + solvingRun.bestResponse().solution().get() );
+            System.exit(0);
+
+        } catch (IOException | ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -139,7 +211,7 @@ public class Main {
                     solvingRun = workflowManager.runSolving(cnf);
                 } catch (Exception e){
                     Instant after = Instant.now();
-                    solvingRun = new FullRun(cnf, before, after, Duration.between(before, after).toMillis() / 1000d, new ArrayList<>(), new SolverRunInstance(Optional.empty(), SolverStatusEnum.ERROR, Optional.empty(), 0));
+                    solvingRun = new FullRun(cnf, before, after, Duration.between(before, after).toMillis() / 1000d, new ArrayList<>(), new SolverRunInstance(Optional.empty(), SolverStatusEnum.ERROR, Optional.empty(), 0, SolverType.ERR));
                     System.out.println("Error in Run for "+cnf);
                     e.printStackTrace();
                 }
@@ -231,7 +303,7 @@ public class Main {
                 try {
                     solverResponse = SolverHandler.runSolvers(new SolverBudget[]{new SolverBudget(task.solver, task.timeout)}, task.cnf).solverResponses().get(0);
                 } catch (Exception e){
-                    solverResponse = new SolverRunInstance(null, SolverStatusEnum.ERROR, Optional.empty(), 0);
+                    solverResponse = new SolverRunInstance(null, SolverStatusEnum.ERROR, Optional.empty(), 0, SolverType.ERR);
                     System.out.println("Error in Run of solver "+ task.solver +" for "+task.cnf());
                     e.printStackTrace();
                 }
@@ -270,6 +342,10 @@ public class Main {
         //TODO enbable more functionality, e.g. model training, feature extraction, ...
         options.addOption(Option.builder("modelFile").argName("model").hasArg().desc("Path to trained autofolio model").build());
         options.addOption(Option.builder("cnfFile").argName("cnf").hasArg().desc("Path to cnf").build());
+        options.addOption(Option.builder("tmpdir").argName("tmpdir").hasArg().desc("Path for temporary files").build());
+        options.addOption(Option.builder("maxrss").argName("maxrss").hasArg().desc("Size of max available RAM in GB").build());
+        options.addOption(Option.builder("maxtmp").argName("maxtmp").hasArg().desc("Size of max available TMP in GB").build());
+        options.addOption(Option.builder("timeout").argName("timeout").hasArg().desc("Runtime limit in seconds").build());
 
 
         //options.addOptionGroup(mainOptions);
@@ -279,11 +355,13 @@ public class Main {
 
     private static void printHelp(Options options){
         HelpFormatter helpFormatter = new HelpFormatter();
-        helpFormatter.printHelp("as4moco", "A simple algorithm selection #SAT solver!", options, "For more information, see associated paper: \n link", true); //TODO fix paper link
+        helpFormatter.printHelp("as4moco", "A simple algorithm selection #SAT solver!", options, "For more information, see associated paper: \n https://doi.org/10.18725/OPARU-52711", true); //TODO fix paper link
     }
 
     private record RunTask(String solver, File cnf, int timeout){
 
     }
+
+
 
 }

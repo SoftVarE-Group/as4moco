@@ -15,6 +15,7 @@ import de.uulm.sp.fmc.as4moco.selection.messages.python.PreSchedule;
 import de.uulm.sp.fmc.as4moco.selection.messages.python.Prediction;
 import de.uulm.sp.fmc.as4moco.solver.SolverHandler;
 import de.uulm.sp.fmc.as4moco.solver.SolverStatusEnum;
+import de.uulm.sp.fmc.as4moco.solver.SolverType;
 import org.collection.fm.util.AnalysisStepsEnum;
 
 import java.io.File;
@@ -84,7 +85,7 @@ public class WorkflowManager implements AutoCloseable {
     }
 
     private static SolverRunInstance getBestResponse(List<SolverRunInstance> responses) {
-        return responses.stream().reduce(new SolverRunInstance(null, SolverStatusEnum.ERROR, Optional.empty(), 0), (acc, next) -> acc.status().equals(SolverStatusEnum.OK) ? acc : next);
+        return responses.stream().reduce(new SolverRunInstance(null, SolverStatusEnum.ERROR, Optional.empty(), 0, SolverType.ERR), (acc, next) -> acc.status().equals(SolverStatusEnum.OK) ? acc : next);
     }
 
     private HandledInstance handleSchedule(File cnfFile) throws ExecutionException, InterruptedException {
