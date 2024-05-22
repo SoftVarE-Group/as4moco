@@ -100,16 +100,16 @@ public class Main {
             }
         });
 
-        Runtime.getRuntime().addShutdownHook(new Thread( () -> {
+        new Thread( () -> {
             try {
                 if (commandLine.hasOption("timeout")) {
-                    Thread.currentThread().wait(1000 * Long.parseLong(commandLine.getOptionValue("timeout")));
+                    Thread.sleep(1000 * Long.parseLong(commandLine.getOptionValue("timeout")));
                     System.exit(-1);
                 }
             } catch (InterruptedException e) {
             //ignore
             }
-        }));
+        }).start();
         try (WorkflowManager workflowManager = new WorkflowManager(new File(commandLine.getOptionValue("modelFile")))) {
 
             ObjectMapper mapper = new ObjectMapper();
