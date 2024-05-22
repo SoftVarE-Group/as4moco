@@ -8,6 +8,7 @@ solfile=$(mktemp)
 indfile=$(mktemp)
 cleanfile=$(mktemp)
 preprocessed_cnf_file=$(mktemp)
+tmpTD=$(mktemp -d)
 tout_be=280
 echo "c o solfile: $solfile  indfile: $indfile  cleanfile: $cleanfile preprocessed_cnf_file: $preprocessed_cnf_file"
 echo "c o This script is for regular model counting track"
@@ -28,7 +29,7 @@ fi
 echo "c c MULTI will be 2**$multi"
 cache_size=8000
 echo "c o Trying to run sharpsat-td, cache_size: ${cache_size} MB"
-./sharpSAT-td -decot 120 -decow 100 -tmpdir . -cs ${cache_size} -pptoutdiv 10 -ppstr "P" $cleanfile | tee $solfile | sed "s/^/c o /"
+./sharpSAT-td -decot 120 -decow 100 -tmpdir $tmpTD -cs ${cache_size} -pptoutdiv 10 -ppstr "P" $cleanfile | tee $solfile | sed "s/^/c o /"
 solved_by_ganak=`grep "^s .*SATISFIABLE" $solfile`
 if [[ $solved_by_ganak == *"SATISFIABLE"* ]]; then
     sat=`grep "^s .*SATISFIABLE" $solfile`
@@ -37,7 +38,7 @@ if [[ $solved_by_ganak == *"SATISFIABLE"* ]]; then
     if [[ "$count" == "0" ]]; then
         log_10_count="-inf"
     else
-        count=`echo "$count*(2^$multi)" | bc -l`
+        count=`echo "$count * (2^$multi)" | bc -l`
         log_10_count=`echo "scale=15; l($count)/l(10)" | bc -l `
     fi
 
