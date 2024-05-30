@@ -1,5 +1,5 @@
 #!/bin/sh
 
-tmp_file=$(mktemp -d)
-echo "c o initial Tmp dir: $tmp_file"
-./unweighted.sh $1 --tmpdir=$tmp_file --maxrss=8 --maxtmp=1 --timeout=1800 --task=wmc
+mkdir -p tmp_dir
+
+./unweighted.sh $1 --tmpdir=tmp_dir --maxrss=8 --maxtmp=1 --timeout=1800 --task=wmc

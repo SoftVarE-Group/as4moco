@@ -110,8 +110,9 @@ public class Main {
             //ignore
             }
         }).start();
+	System.out.println("Initialising Workflow Manager");
         try (WorkflowManager workflowManager = new WorkflowManager(new File(commandLine.getOptionValue("modelFile")))) {
-
+	    System.out.println("Model loaded");
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule()).registerModule(new Jdk8Module());
 
@@ -124,6 +125,7 @@ public class Main {
                 Instant after = Instant.now();
                 solvingRun = new FullRun(cnf, before, after, Duration.between(before, after).toMillis() / 1000d, new ArrayList<>(), new SolverRunInstance(Optional.empty(), SolverStatusEnum.ERROR, Optional.empty(), 0, SolverType.ERR));
                 System.out.println("Error in Run for " + cnf);
+		e.printStackTrace();
             }
 
             System.out.println(mapper.writeValueAsString(solvingRun));

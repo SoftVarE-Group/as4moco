@@ -35,7 +35,7 @@ public class WorkflowManager implements AutoCloseable {
 
     public WorkflowManager(File modelFile) throws ExecutionException, InterruptedException {
         algorithmSelector = new AlgorithmSelector();
-
+	System.out.println("Initialised AutoFolio");
         if ( ! (algorithmSelector.askAutofolio(new LoadModel(modelFile.getAbsolutePath())).get() instanceof ModelLoaded)) throw new RuntimeException("Problem with autofolio loading") ;
         System.out.println("Autofolio loaded successfully!");
 
