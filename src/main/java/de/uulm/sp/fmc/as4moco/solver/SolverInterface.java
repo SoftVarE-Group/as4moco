@@ -1,6 +1,9 @@
 package de.uulm.sp.fmc.as4moco.solver;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
+
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.*;
 
 public interface SolverInterface {
@@ -17,7 +20,7 @@ public interface SolverInterface {
         if (statusCode == 0 || statusCode == 42){
             if (combinedOutput.contains("TIME LIMIT OF") && combinedOutput.contains("EXCEEDED"))
                 return new SolverResponse(SolverMap.getName(this), SolverStatusEnum.TIMEOUT, Optional.empty(), SolverType.ERR);
-            Optional<Double> count = combinedOutput.lines().filter(e -> e.startsWith("c s exact"))
+            Optional<BigDecimal> count = combinedOutput.lines().filter(e -> e.startsWith("c s exact"))
                     .map(SolverInterface::mapMultiStringToDouble)
                     .filter(Optional::isPresent).map(Optional::get).findAny(); //TODO
             if (count.isPresent()) return new SolverResponse(SolverMap.getName(this), SolverStatusEnum.OK, count, SolverType.exact);
@@ -41,10 +44,10 @@ public interface SolverInterface {
         );
     }
 
-    private static Optional<Double> mapMultiStringToDouble(String string){
+    private static Optional<BigDecimal> mapMultiStringToDouble(String string){
         return Arrays.stream(string.split(" ")).map(s -> {
             try {
-                return Double.valueOf(s);
+                return BigDecimalMath.toBigDecimal(s);
             }catch (NumberFormatException e){
                 return null;
             }

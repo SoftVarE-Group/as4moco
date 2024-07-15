@@ -22,7 +22,7 @@ public class FoldRunExtractor {
     public static void main(String[] args) {
 
 
-        File folder = new File(""); //todo insert run folder
+        File folder = new File("/home/ubuntu/raphael-dunkel-bachelor/data/fold_runs/MCC22_T1_splits_6000I/MCC2022_T1_F5_6000I"); //todo insert run folder
         File as4mocoInput = Arrays.stream(Objects.requireNonNull(folder.listFiles())).filter(File::isFile).filter(e -> e.getName().startsWith("MCC")).findAny().orElseThrow();
         File sbsInput = Arrays.stream(Objects.requireNonNull(folder.listFiles())).filter(File::isFile).filter(e -> e.getName().startsWith("sbs")).findAny().orElseThrow();
         File oracleInput = Arrays.stream(Objects.requireNonNull(folder.listFiles())).filter(File::isFile).filter(e -> e.getName().startsWith("oracle")).findAny().orElseThrow();

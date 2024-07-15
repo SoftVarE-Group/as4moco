@@ -1,5 +1,6 @@
 package de.uulm.sp.fmc.as4moco;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -22,6 +23,8 @@ import org.apache.commons.csv.CSVParser;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.Instant;
@@ -133,11 +136,11 @@ public class Main {
                 outStream.printNormalln("s UNKNOWN");
                 System.exit(-1);
             }
-            else if (solvingRun.bestResponse().solution().get() == 0) outStream.printNormalln("s UNSATISFIABLE");
+            else if (solvingRun.bestResponse().solution().get().compareTo(BigDecimal.ZERO) == 0) outStream.printNormalln("s UNSATISFIABLE");
             else outStream.printNormalln("s SATISFIABLE");
 
             outStream.printNormalln("c s type mc");
-            outStream.printNormalln("c s log10-estimate " + Math.log10(solvingRun.bestResponse().solution().get()));
+            outStream.printNormalln("c s log10-estimate " + BigDecimalMath.log10(solvingRun.bestResponse().solution().get(), new MathContext(20)));
             outStream.printNormalln("c s  " + solvingRun.bestResponse().solverType() + " double float " + solvingRun.bestResponse().solution().get() );
             System.exit(0);
 

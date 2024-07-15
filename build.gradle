@@ -26,6 +26,9 @@ dependencies {
 
     implementation 'org.apache.commons:commons-csv:1.10.0'
 
+    // https://mvnrepository.com/artifact/ch.obermuhlner/big-math
+    implementation 'ch.obermuhlner:big-math:2.3.2'
+
 
 }
 
